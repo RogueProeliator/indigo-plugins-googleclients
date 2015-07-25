@@ -1,0 +1,61 @@
+<?xml version="1.0"?>
+<Actions>
+	<Action id="sendPushNotification" deviceFilter="self">
+		<Name>Send Push Notification Message</Name>
+		<CallbackMethod>processSendNotification</CallbackMethod>
+		<ConfigUI>
+			<Field id="notificationMessageTitle" type="label" fontColor="darkGray">
+				<Label>NOTIFICATION MESSAGE</Label>
+			</Field>
+			<Field id="notificationMessageSeparator" type="separator" />
+			<Field id="message" type="textfield">
+				<Label>Notification Message:</Label>
+			</Field>
+			<Field id="messageSubInstructions" type="label" fontSize="small" alignWithControl="true">
+				<Label>The Notification Messages supports several substitutions to provide your notification with more info. To insert a variable, add %%v:VARIABLEID%%. To insert a device state, add %%d:DEVICEID:STATEKEY%%. The variable and/or device ID may be retrieved by right clicking on the item in Indigo and choosing the Copy ID option. Please see the forums for more information or help with this feature.</Label>
+			</Field>
+			<Field type="menu" id="importanceLevel" defaultValue="normal">
+				<Label>Message Importance Level:</Label>
+				<List>
+					<Option value="low">Low</Option>
+					<Option value="normal">Normal</Option>
+					<Option value="critical">Critical</Option>
+				</List>
+			</Field>
+			<Field id="messageTypeInstructions" type="label" fontSize="small" alignWithControl="true">
+				<Label>The message type affects your device's response upon receipt - Notifications trigger only a message in the shade, Alerts will trigger a standard alert similar to an email, and a Critical Alert will cause a long vibration to help get attention.</Label>
+			</Field>
+			<Field id="notificationActionsTitle" type="label" fontColor="darkGray">
+				<Label>NOTIFICATION ACTIONS (OPTIONAL)</Label>
+			</Field>
+			<Field id="notificationActionsSeparator" type="separator" />
+			<Field type="label" id="indigoActionInstructions" fontSize="small">
+				<Label>Your notification may include the ability to click on a button to perform a quick action. For instance, an alert that motion is detected could include a button to allow you to turn on all outside lights. These are optional.</Label>
+			</Field>
+			<Field id="action1Name" type="textfield">
+				<Label>Action 1 (Button Text):</Label>
+			</Field>
+			<Field id="action1Group" type="menu">
+				<Label></Label>
+				<List class="indigo.actionGroups" />
+			</Field>
+			<Field id="clearAction1" type="button">
+				<Label></Label>
+				<Title>Clear</Title>
+				<CallbackMethod>clearNotificationAction1</CallbackMethod>
+			</Field>
+			<Field id="action2Name" type="textfield">
+				<Label>Action 2 (Button Text):</Label>
+			</Field>
+			<Field id="action2Group" type="menu">
+				<Label></Label>
+				<List class="indigo.actionGroups" />
+			</Field>
+			<Field id="clearAction2" type="button">
+				<Label></Label>
+				<Title>Clear</Title>
+				<CallbackMethod>clearNotificationAction2</CallbackMethod>
+			</Field>
+		</ConfigUI>
+	</Action>
+</Actions>

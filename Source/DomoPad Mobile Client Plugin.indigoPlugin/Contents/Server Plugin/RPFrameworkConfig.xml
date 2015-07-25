@@ -1,0 +1,44 @@
+<RPFrameworkConfig>
+	<pluginConfig>
+		<pluginParams>
+			<param indigoId="indigoPort" paramType="ParamTypeInteger" isRequired="True">
+				<minValue>1</minValue>
+				<maxValue>99999</maxValue>
+				<defaultValue>10002</defaultValue>
+				<invalidValueMessage><![CDATA[Please enter the Indigo remote connection port]]></invalidValueMessage>
+			</param>
+		</pluginParams>
+		<guiConfiguration>
+			<remoteCommandPort>9176</remoteCommandPort>
+			<pluginCommandQueueIdleSleep>3</pluginCommandQueueIdleSleep>
+		</guiConfiguration>
+		<deviceMapping>
+			<device indigoId="domoPadAndroidClient" className="DomoPadAndroidClient" />
+			<device indigoId="domoPadVideoFeed" className="VideoCameraFeed" />
+		</deviceMapping>
+		<devices>
+			<device indigoId="domoPadAndroidClient">
+			</device>
+			<device indigoId="domoPadVideoFeed">
+				<params>
+					<param indigoId="videoFeedUrl" paramType="ParamTypeString" isRequired="True">
+						<invalidValueMessage><![CDATA[Please enter the URL of the video feed to show.]]></invalidValueMessage>
+					</param>
+				</params>
+			</device>
+		</devices>
+		<actions>
+			<action indigoId="sendPushNotification">
+				<commands />
+				<params>
+					<param indigoId="message" paramType="ParamTypeString" isRequired="True">
+						<invalidValueMessage><![CDATA[Please enter the text of the message to send]]></invalidValueMessage>
+					</param>
+					<param indigoId="importanceLevel" paramType="ParamTypeString" isRequired="True">
+						<invalidValueMessage><![CDATA[Please select the importance level of the notification]]></invalidValueMessage>
+					</param>
+				</params>
+			</action>
+		</actions>
+	</pluginConfig>
+</RPFrameworkConfig>
