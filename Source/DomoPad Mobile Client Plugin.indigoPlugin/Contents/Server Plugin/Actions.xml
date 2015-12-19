@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <Actions>
-	<Action id="sendPushNotification" deviceFilter="self">
+	<Action id="sendPushNotification" deviceFilter="self.domoPadAndroidClient">
 		<Name>Send Push Notification Message</Name>
 		<CallbackMethod>processSendNotification</CallbackMethod>
 		<ConfigUI>

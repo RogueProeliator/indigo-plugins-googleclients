@@ -20,6 +20,7 @@
 				<Title>Clear Pairing</Title>
 				<CallbackMethod>clearDevicePairing</CallbackMethod>
 			</Field>
+			<Field type="checkbox" id="SupportsBatteryLevel" hidden="true" defaultValue="true"/>
 		</ConfigUI>
 		<UiDisplayStateId>isPaired</UiDisplayStateId>
 		<States>
@@ -27,6 +28,36 @@
 				<ValueType>Boolean</ValueType>
 				<TriggerLabel>Is Paired</TriggerLabel>
 				<ControlPageLabel>Is Paired</ControlPageLabel>
+			</State>
+			<State id="modelName">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Model Is</TriggerLabel>
+				<ControlPageLabel>Model</ControlPageLabel>
+			</State>
+			<State id="batteryStatus">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Battery Status Is</TriggerLabel>
+				<ControlPageLabel>Battery Status</ControlPageLabel>
+			</State>
+			<State id="batteryLevel">
+				<ValueType>Integer</ValueType>
+				<TriggerLabel>Battery Level Is</TriggerLabel>
+				<ControlPageLabel>Battery Level</ControlPageLabel>
+			</State>
+			<State id="longitude">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Longitude Is</TriggerLabel>
+				<ControlPageLabel>Longitude</ControlPageLabel>
+			</State>
+			<State id="latitude">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Latitude Is</TriggerLabel>
+				<ControlPageLabel>Latitude</ControlPageLabel>
+			</State>
+			<State id="locationFixTime">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Last Location Fix Is</TriggerLabel>
+				<ControlPageLabel>Last Location Fix</ControlPageLabel>
 			</State>
 		</States>
 	</Device>

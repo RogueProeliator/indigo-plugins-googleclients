@@ -42,12 +42,23 @@ class DomoPadAndroidClient(RPFramework.RPFrameworkNonCommChildDevice.RPFramework
 	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	def __init__(self, plugin, device):
 		super(DomoPadAndroidClient, self).__init__(plugin, device)
+		
+		self.upgradedDeviceProperties.append((u'SupportsBatteryLevel', True))
+		
+		self.upgradedDeviceStates.append(u'modelName')
+		self.upgradedDeviceStates.append(u'batteryStatus')
+		self.upgradedDeviceStates.append(u'batteryLevel')
+		self.upgradedDeviceStates.append(u'longitude')
+		self.upgradedDeviceStates.append(u'latitude')
+		self.upgradedDeviceStates.append(u'locationFixTime')
 	
 	
 	#/////////////////////////////////////////////////////////////////////////////////////
 	# Overridden communications functions
 	#/////////////////////////////////////////////////////////////////////////////////////
 	def initiateCommunications(self):
+		super(DomoPadAndroidClient, self).initiateCommunications()
+		
 		# update the state of the device to reflect the pairing status...
 		currentPairingState = self.indigoDevice.states.get("isPaired", False)
 		currentPairingProp = self.indigoDevice.pluginProps.get("deviceRegistrationId", "")

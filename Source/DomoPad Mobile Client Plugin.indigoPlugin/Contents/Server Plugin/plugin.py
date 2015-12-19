@@ -37,7 +37,7 @@ import domoPadDevices
 #/////////////////////////////////////////////////////////////////////////////////////////
 # Constants and configuration variables
 #/////////////////////////////////////////////////////////////////////////////////////////
-INCLUDED_IWS_VERSION = (0,12)
+INCLUDED_IWS_VERSION = (1,2)
 DOMOPADCOMMAND_SENDNOTIFICATION = "SendNotification"
 
 
@@ -59,7 +59,7 @@ class Plugin(RPFramework.RPFrameworkPlugin.RPFrameworkPlugin):
 	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	def __init__(self, pluginId, pluginDisplayName, pluginVersion, pluginPrefs):
 		# RP framework base class's init method
-		super(Plugin, self).__init__(pluginId, pluginDisplayName, pluginVersion, pluginPrefs, "http://www.duncanware.com/Downloads/IndigoHomeAutomation/Plugins/DomoPadMobileClient/DomoPadMobileClientVersionInfo.html", managedDeviceClassModule=domoPadDevices)
+		super(Plugin, self).__init__(pluginId, pluginDisplayName, pluginVersion, pluginPrefs, u'http://www.duncanware.com/Downloads/IndigoHomeAutomation/Plugins/DomoPadMobileClient/DomoPadMobileClientVersionInfo.html', managedDeviceClassModule=domoPadDevices)
 		
 		
 	#/////////////////////////////////////////////////////////////////////////////////////
@@ -79,11 +79,11 @@ class Plugin(RPFramework.RPFrameworkPlugin.RPFrameworkPlugin):
 		# create the socket listener server that will listen for incoming commands to
 		# be sent to the Plugin
 		try:
-			host = ''
-			port = int(self.getGUIConfigValue(RPFramework.RPFrameworkPlugin.GUI_CONFIG_PLUGINSETTINGS, "remoteCommandPort", "9176"))
+			host = u''
+			port = int(self.getGUIConfigValue(RPFramework.RPFrameworkPlugin.GUI_CONFIG_PLUGINSETTINGS, u'remoteCommandPort', u'9176'))
 			self.socketServer = ThreadedTCPServer((host, port), ThreadedTCPRequestHandler)
 			
-			self.logDebugMessage("Starting up connection listener", RPFramework.RPFrameworkPlugin.DEBUGLEVEL_MED)
+			self.logDebugMessage(u'Starting up connection listener', RPFramework.RPFrameworkPlugin.DEBUGLEVEL_MED)
 			self.socketServerThread = threading.Thread(target=self.socketServer.serve_forever)
 			self.socketServerThread.daemon = True
 			self.socketServerThread.start()
@@ -112,32 +112,32 @@ class Plugin(RPFramework.RPFrameworkPlugin.RPFrameworkPlugin):
 			# we are using HTTPS to communicate with the Google Cloud Messaging service, so we must have
 			# Indigo v6.1 in order to user
 			if float(indigo.server.apiVersion) < 1.19:
-				indigo.server.log("Push notifications require Indigo v6.1 or later", isError=True)	
+				indigo.server.log(u'Push notifications require Indigo v6.1 or later', isError=True)	
 			else:
-				self.logDebugMessage("Push Notification Send Command: DevicePairID=" + str(rpCommand.commandPayload[0]) + "; Type=" + rpCommand.commandPayload[2] + "; Message=" + rpCommand.commandPayload[1], RPFramework.RPFrameworkPlugin.DEBUGLEVEL_HIGH)
+				self.logDebugMessage(u'Push Notification Send Command: DevicePairID=' + RPFramework.RPFrameworkUtils.to_unicode(rpCommand.commandPayload[0]) + u'; Type=' + rpCommand.commandPayload[2] + u'; Message=' + rpCommand.commandPayload[1], RPFramework.RPFrameworkPlugin.DEBUGLEVEL_HIGH)
 			
 				# setup the defaults so that we know all of the parameters have a value...
-				queryStringParams = { "devicePairingId" : rpCommand.commandPayload[0], "notificationType" : "Alert", "priority" : rpCommand.commandPayload[2], "message" : rpCommand.commandPayload[1] }
-				queryStringParams["action1Name"] = ""
-				queryStringParams["action1Group"] = ""
-				queryStringParams["action2Name"] = ""
-				queryStringParams["action2Group"] = ""
+				queryStringParams = { u'devicePairingId' : rpCommand.commandPayload[0], u'notificationType' : u'Alert', u'priority' : rpCommand.commandPayload[2], u'message' : rpCommand.commandPayload[1] }
+				queryStringParams[u'action1Name'] = u''
+				queryStringParams[u'action1Group'] = u''
+				queryStringParams[u'action2Name'] = u''
+				queryStringParams[u'action2Group'] = u''
 			
 				# build the query string as it must be URL encoded
-				if rpCommand.commandPayload[3] != "" and rpCommand.commandPayload[4] != "":
-					self.logDebugMessage("Push Notification Send Action 1: " + rpCommand.commandPayload[3] + " => " + rpCommand.commandPayload[4], RPFramework.RPFrameworkPlugin.DEBUGLEVEL_HIGH)
-					queryStringParams["action1Name"] = rpCommand.commandPayload[3]
-					queryStringParams["action1Group"] = rpCommand.commandPayload[4]
-					queryStringParams["notificationType"] = "ActionAlert"
-					targetApiMethod = "sendActionablePushNotification"
-				if rpCommand.commandPayload[5] != "" and rpCommand.commandPayload[6] != "":
-					self.logDebugMessage("Push Notification Send Action 2: " + rpCommand.commandPayload[5] + " => " + rpCommand.commandPayload[6], RPFramework.RPFrameworkPlugin.DEBUGLEVEL_HIGH)
-					queryStringParams["action2Name"] = rpCommand.commandPayload[5]
-					queryStringParams["action2Group"] = rpCommand.commandPayload[6]
-					queryStringParams["notificationType"] = "ActionAlert"
+				if rpCommand.commandPayload[3] != u'' and rpCommand.commandPayload[4] != u'':
+					self.logDebugMessage(u'Push Notification Send Action 1: ' + rpCommand.commandPayload[3] + u' => ' + rpCommand.commandPayload[4], RPFramework.RPFrameworkPlugin.DEBUGLEVEL_HIGH)
+					queryStringParams[u'action1Name'] = rpCommand.commandPayload[3]
+					queryStringParams[u'action1Group'] = rpCommand.commandPayload[4]
+					queryStringParams[u'notificationType'] = u'ActionAlert'
+					targetApiMethod = u'sendActionablePushNotification'
+				if rpCommand.commandPayload[5] != u'' and rpCommand.commandPayload[6] != u'':
+					self.logDebugMessage(u'Push Notification Send Action 2: ' + rpCommand.commandPayload[5] + u' => ' + rpCommand.commandPayload[6], RPFramework.RPFrameworkPlugin.DEBUGLEVEL_HIGH)
+					queryStringParams[u'action2Name'] = rpCommand.commandPayload[5]
+					queryStringParams[u'action2Group'] = rpCommand.commandPayload[6]
+					queryStringParams[u'notificationType'] = u'ActionAlert'
 			
 				queryStringEncoded = urllib.urlencode(queryStringParams)
-				self.logDebugMessage("Push Notification Payload=" + queryStringEncoded, RPFramework.RPFrameworkPlugin.DEBUGLEVEL_HIGH)
+				self.logDebugMessage(u'Push Notification Payload=' + queryStringEncoded, RPFramework.RPFrameworkPlugin.DEBUGLEVEL_HIGH)
 		
 				# this routine is executed asynchronously and thus can directly send the
 				# request to the server
@@ -151,15 +151,15 @@ class Plugin(RPFramework.RPFrameworkPlugin.RPFrameworkPlugin):
 
 				response = conn.getresponse()
 				responseText = response.read()
-				self.logDebugMessage("Push notification Response: [" + unicode(response.status) + "] " + responseText, RPFramework.RPFrameworkPlugin.DEBUGLEVEL_HIGH)
+				self.logDebugMessage(u'Push notification Response: [' + RPFramework.RPFrameworkUtils.to_unicode(response.status) + u'] ' + responseText, RPFramework.RPFrameworkPlugin.DEBUGLEVEL_HIGH)
 			
 				try:
 					if response.status == 204:
-						self.logDebugMessage("Push notification sent successfully", RPFramework.RPFrameworkPlugin.DEBUGLEVEL_MED)
+						self.logDebugMessage(u'Push notification sent successfully', RPFramework.RPFrameworkPlugin.DEBUGLEVEL_MED)
 					else:
-						indigo.server.log("Error sending push notification.", isError=True)	
+						indigo.server.log(u'Error sending push notification.', isError=True)	
 				except:
-					indigo.server.log("Error sending push notification.", isError=True)	
+					indigo.server.log(u'Error sending push notification.', isError=True)	
 					self.exceptionLog()
 			
 	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -168,19 +168,19 @@ class Plugin(RPFramework.RPFrameworkPlugin.RPFrameworkPlugin):
 	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	def processSendNotification(self, action):
 		rpDevice = self.managedDevices[action.deviceId]
-		deviceRegistrationId = rpDevice.indigoDevice.pluginProps.get("deviceRegistrationId", "")
-		messageToSend = self.substitute(action.props.get("message"))
-		importanceLevel = action.props.get("importanceLevel")
+		deviceRegistrationId = rpDevice.indigoDevice.pluginProps.get(u'deviceRegistrationId', u'')
+		messageToSend = self.substitute(action.props.get(u'message'))
+		importanceLevel = action.props.get(u'importanceLevel')
 		
-		action1Name = action.props.get("action1Name", "")
-		action1Group = action.props.get("action1Group", "")
-		action2Name = action.props.get("action2Name", "")
-		action2Group = action.props.get("action2Group", "")
+		action1Name = action.props.get(u'action1Name', u'')
+		action1Group = action.props.get(u'action1Group', u'')
+		action2Name = action.props.get(u'action2Name', u'')
+		action2Group = action.props.get(u'action2Group', u'')
 		
-		if deviceRegistrationId == "":
-			indigo.server.log("Unable to send push notification to " + str(rpDevice.indigoDevice.deviceId) + "; the device is not paired.", isError=True)
+		if deviceRegistrationId == u'':
+			indigo.server.log(u'Unable to send push notification to ' + RPFramework.RPFrameworkUtils.to_unicode(rpDevice.indigoDevice.deviceId) + u'; the device is not paired.', isError=True)
 		else:
-			self.logDebugMessage("Queuing push notification command for " + str(action.deviceId), RPFramework.RPFrameworkPlugin.DEBUGLEVEL_HIGH)
+			self.logDebugMessage(u'Queuing push notification command for ' + RPFramework.RPFrameworkUtils.to_unicode(action.deviceId), RPFramework.RPFrameworkPlugin.DEBUGLEVEL_HIGH)
 			self.pluginCommandQueue.put(RPFramework.RPFrameworkCommand.RPFrameworkCommand(DOMOPADCOMMAND_SENDNOTIFICATION, commandPayload=(deviceRegistrationId, messageToSend, importanceLevel, action1Name, action1Group, action2Name, action2Group)))
 		
 			
@@ -192,7 +192,7 @@ class Plugin(RPFramework.RPFrameworkPlugin.RPFrameworkPlugin):
 	# clicked the button to clear the value of the device pairing
 	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	def clearDevicePairing(self, valuesDict, typeId, devId):
-		valuesDict["deviceRegistrationId"] = ""
+		valuesDict[u'deviceRegistrationId'] = u''
 		return valuesDict
 		
 	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -208,8 +208,8 @@ class Plugin(RPFramework.RPFrameworkPlugin.RPFrameworkPlugin):
 	# an action in slot 1
 	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	def clearNotificationAction1(self, valuesDict, typeId, devId):
-		valuesDict["action1Name"] = ""
-		valuesDict["action1Group"] = ""
+		valuesDict[u'action1Name'] = u''
+		valuesDict[u'action1Group'] = u''
 		return valuesDict
 		
 	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -217,8 +217,8 @@ class Plugin(RPFramework.RPFrameworkPlugin.RPFrameworkPlugin):
 	# an action in slot 2
 	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	def clearNotificationAction2(self, valuesDict, typeId, devId):
-		valuesDict["action2Name"] = ""
-		valuesDict["action2Group"] = ""
+		valuesDict[u'action2Name'] = u''
+		valuesDict[u'action2Group'] = u''
 		return valuesDict
 	
 	
@@ -232,8 +232,8 @@ class Plugin(RPFramework.RPFrameworkPlugin.RPFrameworkPlugin):
 		# check the IWS plugin currently installed and see if we need to install or upgrade
 		# to the version included with this plugin
 		currentIWSPluginVersion = self.getIWSPluginVersion()
-		self.logDebugMessage("Current IWS Plugin: v" + str(currentIWSPluginVersion[0]) + "." + str(currentIWSPluginVersion[1]), RPFramework.RPFrameworkPlugin.DEBUGLEVEL_MED)
-		self.logDebugMessage("Included IWS Plugin: v" + str(INCLUDED_IWS_VERSION[0]) + "." + str(INCLUDED_IWS_VERSION[1]), RPFramework.RPFrameworkPlugin.DEBUGLEVEL_MED)
+		self.logDebugMessage(u'Current IWS Plugin: v' + RPFramework.RPFrameworkUtils.to_unicode(currentIWSPluginVersion[0]) + u'.' + RPFramework.RPFrameworkUtils.to_unicode(currentIWSPluginVersion[1]), RPFramework.RPFrameworkPlugin.DEBUGLEVEL_MED)
+		self.logDebugMessage(u'Included IWS Plugin: v' + RPFramework.RPFrameworkUtils.to_unicode(INCLUDED_IWS_VERSION[0]) + u'.' + RPFramework.RPFrameworkUtils.to_unicode(INCLUDED_IWS_VERSION[1]), RPFramework.RPFrameworkPlugin.DEBUGLEVEL_MED)
 		
 		if INCLUDED_IWS_VERSION[0] > currentIWSPluginVersion[0] or (INCLUDED_IWS_VERSION[0] == currentIWSPluginVersion[0] and INCLUDED_IWS_VERSION[1] > currentIWSPluginVersion[1]):
 			# we need to perform the IWS upgrade now
@@ -247,22 +247,22 @@ class Plugin(RPFramework.RPFrameworkPlugin.RPFrameworkPlugin):
 		try:
 			# create a password manager
 			indigoPassMgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
-			indigoPassMgr.add_password(None, "http://localhost:" + self.pluginPrefs.get("indigoPort") +"/", self.pluginPrefs.get("indigoUsername"), self.pluginPrefs.get("indigoPassword"))
+			indigoPassMgr.add_password(None, u'http://localhost:' + self.pluginPrefs.get(u'indigoPort') + u'/', self.pluginPrefs.get(u'indigoUsername'), self.pluginPrefs.get(u'indigoPassword'))
 			handler = urllib2.HTTPDigestAuthHandler(indigoPassMgr)
 
 			# create "opener" (OpenerDirector instance)
 			opener = urllib2.build_opener(handler)
-			responseToQuery = opener.open("http://localhost:" + self.pluginPrefs.get("indigoPort") + "/AndroidClientHelper/getVersionInfo")
+			responseToQuery = opener.open(u'http://localhost:' + self.pluginPrefs.get(u'indigoPort') + u'/AndroidClientHelper/getVersionInfo')
 			responseToQueryText = responseToQuery.read()
 
 			regex = re.compile("^v(?P<major>\d+)\.(?P<minor>\d+)$")
 			match = regex.search(responseToQueryText)
 			
 			if match is None:
-				self.logDebugMessage("Connected to IWS, but current version not returned: " + responseToQueryText, RPFramework.RPFrameworkPlugin.DEBUGLEVEL_LOW)
+				self.logDebugMessage(u'Connected to IWS, but current version not returned: ' + responseToQueryText, RPFramework.RPFrameworkPlugin.DEBUGLEVEL_LOW)
 				return (0,0)
 			else:
-				return (int(match.groupdict().get("major")), int(match.groupdict().get("minor")))
+				return (int(match.groupdict().get(u'major')), int(match.groupdict().get(u'minor')))
 				
 		except urllib2.HTTPError, e:
 			# if this is a 404 error then the client is not installed and we can return the
@@ -270,14 +270,14 @@ class Plugin(RPFramework.RPFrameworkPlugin.RPFrameworkPlugin):
 			if e.code == 404:
 				return (0,0)
 			else:
-				self.logDebugMessage("Failed to retrieve current IWS plugin version:", RPFramework.RPFrameworkPlugin.DEBUGLEVEL_LOW)
+				self.logDebugMessage(u'Failed to retrieve current IWS plugin version:', RPFramework.RPFrameworkPlugin.DEBUGLEVEL_LOW)
 				if self.debug:
 					self.exceptionLog()
 				return (0,0)
 		except:
 			# when an exception occurs we are going to have to assume that we need to copy
 			# the plugin over...
-			self.logDebugMessage("Failed to retrieve current IWS plugin version:", RPFramework.RPFrameworkPlugin.DEBUGLEVEL_LOW)
+			self.logDebugMessage(u'Failed to retrieve current IWS plugin version:', RPFramework.RPFrameworkPlugin.DEBUGLEVEL_LOW)
 			if self.debug:
 				self.exceptionLog()
 			return (0,0)
@@ -287,7 +287,7 @@ class Plugin(RPFramework.RPFrameworkPlugin.RPFrameworkPlugin):
 	# version from this Plugin
 	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	def updateIWSPlugin(self):	
-		indigo.server.log("Performing update of DomoPad's IWS plugin...")
+		indigo.server.log(u'Performing update of DomoPad''s IWS plugin...')
 		
 		# determine the IWS server directory
 		indigoInstallPath = indigo.server.getInstallFolderPath()
@@ -295,21 +295,21 @@ class Plugin(RPFramework.RPFrameworkPlugin.RPFrameworkPlugin):
 		mainPluginHome = os.path.join(indigoInstallPath, "Plugins/DomoPad Mobile Client.indigoPlugin/Contents/Server Plugin/AndroidClientHelper") 
 		iwsPluginHome = os.path.join(indigoInstallPath, "IndigoWebServer/plugins/AndroidClientHelper")
 		
-		indigo.server.log("Source IWS directory: " + mainPluginHome)
-		indigo.server.log("Target IWS directory: " + iwsPluginHome)
+		indigo.server.log(u'Source IWS directory: ' + mainPluginHome)
+		indigo.server.log(u'Target IWS directory: ' + iwsPluginHome)
 		
 		# ensure that we have the correct source directory...
 		if os.path.exists(mainPluginHome) == False:
-			indigo.server.log("ERROR: Source directory not found!  AndroidClientHelper IWS plugin install could not complete.", isError=True)
+			indigo.server.log(u'ERROR: Source directory not found!  AndroidClientHelper IWS plugin install could not complete.', isError=True)
 			return
 			
 		# execute the directory copy now...
 		try:
 			copy_tree(mainPluginHome, iwsPluginHome, preserve_mode=1)
-			indigo.server.log("AndroidClientHelper successfully installed/updated. Restarting Indigo IWS server to complete install.")
+			indigo.server.log(u'AndroidClientHelper successfully installed/updated. Restarting Indigo IWS server to complete install.')
 			self.restartIWS()
 		except:
-			indigo.server.log("Error copying AndroidClientHelper, AndroidClientHelper IWS plugin install could not complete.", isError=True)
+			indigo.server.log(u'Error copying AndroidClientHelper, AndroidClientHelper IWS plugin install could not complete.', isError=True)
 			self.exceptionLog()
 		
 	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -322,7 +322,7 @@ class Plugin(RPFramework.RPFrameworkPlugin.RPFrameworkPlugin):
 			
 			# create a password manager
 			indigoPassMgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
-			indigoPassMgr.add_password(None, baseUrl, self.pluginPrefs.get("indigoUsername"), self.pluginPrefs.get("indigoPassword"))
+			indigoPassMgr.add_password(None, baseUrl, self.pluginPrefs.get(u'indigoUsername'), self.pluginPrefs.get(u'indigoPassword'))
 			handler = urllib2.HTTPDigestAuthHandler(indigoPassMgr)
 
 			# create "opener" (OpenerDirector instance)
@@ -360,77 +360,104 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
 			
 			commandResponse = ""
 			if commandMatch is None:
-				commandResponse = "ERROR: No command received"
+				commandResponse = u'ERROR: No command received'
 			else:
-				commandName = commandMatch.groupdict().get("commandName")
-				indigo.server.log("Process command: " + commandName)
+				commandName = commandMatch.groupdict().get(u'commandName')
+				indigo.server.log(u'Process command: ' + commandName)
 			
-				if commandName == "executePluginAction":
-					commandArguments = self.parseArguments(commandMatch.groupdict().get("arguments"))
+				if commandName == u'executePluginAction':
+					commandArguments = self.parseArguments(commandMatch.groupdict().get(u'arguments'))
 					# TODO: the plugin action parameters will be encrypted on the action line as an argument
 				
 					# required parameters are the plugin ID and device ID
-					pluginId = commandArguments.get("pluginId")[0]
-					deviceId = commandArguments.get("deviceId")[0]
-					actionId = commandArguments.get("actionId")[0]
-					actionProps = commandArguments.get("actionProps")[0]
+					pluginId = commandArguments.get(u'pluginId')[0]
+					deviceId = commandArguments.get(u'deviceId')[0]
+					actionId = commandArguments.get(u'actionId')[0]
+					actionProps = commandArguments.get(u'actionProps')[0]
 					indigo.server.log(actionProps)
 					
 					# get the plugin that was requested from the indigo server
 					indigoPlugin = indigo.server.getPlugin(pluginId)
 					
 					if indigoPlugin is None:
-						commandResponse = "ERROR: Invalid plugin specified"
+						commandResponse = u'ERROR: Invalid plugin specified'
 					elif (actionProps is None) or (len(actionProps) == 0):
 						indigoPlugin.executeAction(actionId, deviceId=int(deviceId))
-						commandResponse = "OK"
+						commandResponse = u'OK'
 					else:
 						actionPropDict = eval(actionProps)
 						indigoPlugin.executeAction(actionId, deviceId=int(deviceId), props=actionPropDict)
-						commandResponse = "OK"
-				elif commandName == "registerAndroidDevice":
-					commandArguments = self.parseArguments(commandMatch.groupdict().get("arguments"))
-					deviceId = commandArguments.get("deviceId")[0]
-					pairingId = commandArguments.get("pairingId")[0]
-					allowOverwrite = int(commandArguments.get("allowOverwrite")[0])
+						commandResponse = u'OK'
+				elif commandName == u'registerAndroidDevice':
+					commandArguments = self.parseArguments(commandMatch.groupdict().get(u'arguments'))
+					deviceId = commandArguments.get(u'deviceId')[0]
+					pairingId = commandArguments.get(u'pairingId')[0]
+					allowOverwrite = int(commandArguments.get(u'allowOverwrite')[0])
 					
 					indigoAndroidDev = indigo.devices[int(deviceId)]
 					pluginProps = indigoAndroidDev.pluginProps;
 					
-					if pluginProps.get("deviceRegistrationId", "") == "" or allowOverwrite == 1:
-						pluginProps["deviceRegistrationId"] = pairingId
+					if pluginProps.get(u'deviceRegistrationId', u'') == u'' or allowOverwrite == 1:
+						pluginProps[u'deviceRegistrationId'] = pairingId
 						indigoAndroidDev.replacePluginPropsOnServer(pluginProps)
-						indigoAndroidDev.updateStateOnServer("isPaired", True, uiValue="Paired")
-						commandResponse = "OK"
-						indigo.server.log("Successfully paired Android device to Indigo Device " + str(deviceId))
+						indigoAndroidDev.updateStateOnServer(u'isPaired', True, uiValue=u'Paired')
+						commandResponse = u'OK'
+						indigo.server.log(u'Successfully paired Android device to Indigo Device ' + RPFramework.RPFrameworkUtils.to_unicode(deviceId))
 					else:
-						indigo.server.log("Rejected device pairing - Indigo Device already paired to another Android device.", isError=True)
-						commandResponse = "ERROR: Exception Processing Request"
-				elif commandName == "unregisterAndroidDevice":	
-					commandArguments = self.parseArguments(commandMatch.groupdict().get("arguments"))
-					deviceId = commandArguments.get("deviceId")[0]
-					pairingId = commandArguments.get("pairingId")[0]
+						indigo.server.log(u'Rejected device pairing - Indigo Device already paired to another Android device.', isError=True)
+						commandResponse = u'ERROR: Exception Processing Request'
+				elif commandName == u'unregisterAndroidDevice':	
+					commandArguments = self.parseArguments(commandMatch.groupdict().get(u'arguments'))
+					deviceId = commandArguments.get(u'deviceId')[0]
+					pairingId = commandArguments.get(u'pairingId')[0]
 					
 					indigoAndroidDev = indigo.devices[int(deviceId)]
 					pluginProps = indigoAndroidDev.pluginProps;
 					
 					# only de-register if the pairing IDs currently match...
-					if pluginProps.get("deviceRegistrationId", "") == pairingId:
-						pluginProps["deviceRegistrationId"] = ""
+					if pluginProps.get(u'deviceRegistrationId', u'') == pairingId:
+						pluginProps[u'deviceRegistrationId'] = u''
 						indigoAndroidDev.replacePluginPropsOnServer(pluginProps)
-						indigoAndroidDev.updateStateOnServer("isPaired", False, uiValue="Not Paired")
-						commandResponse = "OK"
-						indigo.server.log("Successfully un-paired Android device to Indigo Device " + str(deviceId))
+						indigoAndroidDev.updateStateOnServer(u'isPaired', False, uiValue=u'Not Paired')
+						commandResponse = u'OK'
+						indigo.server.log(u'Successfully un-paired Android device to Indigo Device ' + RPFramework.RPFrameworkUtils.to_unicode(deviceId))
 					else:
-						indigo.server.log("Rejected device un-pairing - Indigo Device does not match Android device.", isError=True)
-						commandResponse = "ERROR: Exception Processing Request"
+						indigo.server.log(u'Rejected device un-pairing - Indigo Device does not match Android device.', isError=True)
+						commandResponse = u'ERROR: Exception Processing Request'
+				elif commandName == u'updateMobileDeviceStates':
+					commandArguments = self.parseArguments(commandMatch.groupdict().get(u'arguments'))
+					pairingId = commandArguments.get(u'pairingId')[0]
+					modelName = commandArguments.get(u'deviceModel')[0]
+					batteryStatus = commandArguments.get(u'batteryStatus')[0]
+					batteryLevel = int(commandArguments.get(u'batteryLevel')[0])
+					longitude = commandArguments.get(u'longitude')[0]
+					latitude = commandArguments.get(u'latitude')[0]
+					locationFixTime = commandArguments.get(u'locationFix', (u''))[0]
+					
+					# we need to find the proper devices based upon the pairing id; the default response will be
+					# that the device was not found
+					commandResponse = u'ERROR: Device not found'
+					devIter = indigo.devices.iter(filter="com.duncanware.domoPadMobileClient.domoPadAndroidClient")
+					for dev in devIter:
+						if dev.pluginProps.get('deviceRegistrationId', '') == pairingId:
+							dev.updateStateOnServer(u'modelName', modelName)
+							dev.updateStateOnServer(u'batteryStatus', batteryStatus)
+							dev.updateStateOnServer(u'batteryLevel', batteryLevel)
+							dev.updateStateOnServer(u'longitude', longitude)
+							dev.updateStateOnServer(u'latitude', latitude)
+							dev.updateStateOnServer(u'locationFixTime', locationFixTime)
+							
+							commandResponse = u'OK'
+							
+					if commandResponse != u'OK':
+						indigo.server.log(u'Received status update for unknown device with Pairing ID: ' + pairingId, isError=True)
 		
 			# send whatever response was generated back to the caller
 			self.request.sendall(commandResponse)
 		
 		except Exception, e:
-			indigo.server.log("DomoPad Plugin Exception: Error processing remote request: " + str(e))
-			self.request.sendall("ERROR: Exception Processing Request")
+			indigo.server.log(u'DomoPad Plugin Exception: Error processing remote request: ' + RPFramework.RPFrameworkUtils.to_unicode(e))
+			self.request.sendall(u'ERROR: Exception Processing Request')
 	
 	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	# This routine will split out the "arguments" section of the request into name/value

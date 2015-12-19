@@ -28,8 +28,8 @@ from dataAccess import indigosql
 #/////////////////////////////////////////////////////////////////////////////////////////
 # Constants and configuration variables
 #/////////////////////////////////////////////////////////////////////////////////////////
-MAJOR_VERSION = "0"
-MINOR_VERSION = "12"
+MAJOR_VERSION = "1"
+MINOR_VERSION = "2"
 
 
 #/////////////////////////////////////////////////////////////////////////////////////////
@@ -242,6 +242,24 @@ class IndigoClientHelperHandler(BaseRequestHandler):
 		
 			return responseToActionText
 	registerAndroidDevice.exposed = True
+	
+	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	# This routine allows a mobile device to update its current status/state within the
+	# Indigo device system
+	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	def updateAndroidDeviceStates(self, pairingId="", deviceModel="", batteryStatus="", batteryLevel=-1, longitude="", latitude="", locationFixTime=""):
+		if not pairingId == u'':
+			# execute a GET against the plugin's web server to complete the action
+			conn = httplib.HTTPConnection("localhost", "9176")
+			conn.connect()
+			request = conn.putrequest("GET", "/AndroidClientHelper/updateMobileDeviceStates?pairingId=" + str(pairingId) + "&deviceModel=" + str(deviceModel) + "&batteryStatus=" + str(batteryStatus) + "&batteryLevel=" + str(batteryLevel) + "&longitude=" + str(longitude) + "&latitude=" + str(latitude) + "&locationFix=" + str(locationFixTime))
+			conn.endheaders()
+
+			responseToAction = conn.getresponse()
+			responseToActionText = responseToAction.read()
+		
+			return responseToActionText
+	updateAndroidDeviceStates.exposed = True
 	
 	
 	#/////////////////////////////////////////////////////////////////////////////////////
