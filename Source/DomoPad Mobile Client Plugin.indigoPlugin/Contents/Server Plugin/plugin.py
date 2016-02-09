@@ -38,7 +38,7 @@ import domoPadDevices
 # Constants and configuration variables
 #/////////////////////////////////////////////////////////////////////////////////////////
 INCLUDED_IWS_VERSION = (1,2)
-DOMOPADCOMMAND_SENDNOTIFICATION = "SendNotification"
+DOMOPADCOMMAND_SENDNOTIFICATION = u'SendNotification'
 
 
 #/////////////////////////////////////////////////////////////////////////////////////////
@@ -117,7 +117,7 @@ class Plugin(RPFramework.RPFrameworkPlugin.RPFrameworkPlugin):
 				self.logDebugMessage(u'Push Notification Send Command: DevicePairID=' + RPFramework.RPFrameworkUtils.to_unicode(rpCommand.commandPayload[0]) + u'; Type=' + rpCommand.commandPayload[2] + u'; Message=' + rpCommand.commandPayload[1], RPFramework.RPFrameworkPlugin.DEBUGLEVEL_HIGH)
 			
 				# setup the defaults so that we know all of the parameters have a value...
-				queryStringParams = { u'devicePairingId' : rpCommand.commandPayload[0], u'notificationType' : u'Alert', u'priority' : rpCommand.commandPayload[2], u'message' : rpCommand.commandPayload[1] }
+				queryStringParams = { u'devicePairingId' : rpCommand.commandPayload[0], u'notificationType' : u'Alert', u'priority' : rpCommand.commandPayload[2], u'message' : RPFramework.RPFrameworkUtils.to_str(rpCommand.commandPayload[1]) }
 				queryStringParams[u'action1Name'] = u''
 				queryStringParams[u'action1Group'] = u''
 				queryStringParams[u'action2Name'] = u''
@@ -126,15 +126,15 @@ class Plugin(RPFramework.RPFrameworkPlugin.RPFrameworkPlugin):
 				# build the query string as it must be URL encoded
 				if rpCommand.commandPayload[3] != u'' and rpCommand.commandPayload[4] != u'':
 					self.logDebugMessage(u'Push Notification Send Action 1: ' + rpCommand.commandPayload[3] + u' => ' + rpCommand.commandPayload[4], RPFramework.RPFrameworkPlugin.DEBUGLEVEL_HIGH)
-					queryStringParams[u'action1Name'] = rpCommand.commandPayload[3]
-					queryStringParams[u'action1Group'] = rpCommand.commandPayload[4]
-					queryStringParams[u'notificationType'] = u'ActionAlert'
+					queryStringParams[u'action1Name'] = RPFramework.RPFrameworkUtils.to_str(rpCommand.commandPayload[3])
+					queryStringParams[u'action1Group'] = RPFramework.RPFrameworkUtils.to_str(rpCommand.commandPayload[4])
+					queryStringParams[u'notificationType'] = "ActionAlert"
 					targetApiMethod = u'sendActionablePushNotification'
 				if rpCommand.commandPayload[5] != u'' and rpCommand.commandPayload[6] != u'':
 					self.logDebugMessage(u'Push Notification Send Action 2: ' + rpCommand.commandPayload[5] + u' => ' + rpCommand.commandPayload[6], RPFramework.RPFrameworkPlugin.DEBUGLEVEL_HIGH)
-					queryStringParams[u'action2Name'] = rpCommand.commandPayload[5]
-					queryStringParams[u'action2Group'] = rpCommand.commandPayload[6]
-					queryStringParams[u'notificationType'] = u'ActionAlert'
+					queryStringParams[u'action2Name'] = RPFramework.RPFrameworkUtils.to_str(rpCommand.commandPayload[5])
+					queryStringParams[u'action2Group'] = RPFramework.RPFrameworkUtils.to_str(rpCommand.commandPayload[6])
+					queryStringParams[u'notificationType'] = "ActionAlert"
 			
 				queryStringEncoded = urllib.urlencode(queryStringParams)
 				self.logDebugMessage(u'Push Notification Payload=' + queryStringEncoded, RPFramework.RPFrameworkPlugin.DEBUGLEVEL_HIGH)

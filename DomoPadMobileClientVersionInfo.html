@@ -1,0 +1,35 @@
+Version: 1.1.19
+EmailSubject: DomoPad Mobile Client Plugin Update
+EmailBody: The DomoPad Mobile Client Plugin for Indigo has been updated to version 1.1.19 and may be downloaded at http://www.duncanware.com/Downloads/IndigoHomeAutomation/Clients/DomoPad/DomoPadMobileClient.zip.
+
+This update fixes a couple of small bugs, most notably one affecting the sending of push notifications with non-US characters.
+
+For help and assistance setting this up, please see the DomoPad Android Client forum, http://forums.indigodomo.com/viewforum.php?f=73, where instructions for setting up will be posted.
+
+This email was sent to you because the update checker was enabled; only one email will be sent for this version update. If you wish to stop receiving update notifications, you may turn off the feature from the HousePad Android Client Plugin's configuration screen found via the Plugins menu within Indigo. If you have any problems or need assistance with the plugin, please visit the forum at http://www.perceptiveautomation.com/userforum/viewforum.php?f=73.
+
+Thanks!
+Adam (RogueProeliator)
+
+=-=-=-=-=-=-=
+Change Log
+=-=-=-=-=-=-=
+Version 1.1.19 [2/8/2016]:
+* Fixed bug related to sending unicode characters in push notifications
+* Added fix to prevent an error in case of renaming of plugin file before installation
+
+Version 1.0.15 [12/15/2015]:
+* Added new states to the Indigo device to receive status information from your Android devicess
+
+Version 0.9.15 [5/23/2015]:
+* Updated push notifications to go directly to the Google Cloud Messaging servers with SSL; previously the message had to make one additional jump since we could not utilize SSL in Python v2.5. With this update, you must be running Indigo v6.1 or higher to continue using push notifications.
+
+Version 0.5.1 [4/25/2015]:
+The DomoPad Mobile Client Plugin has been updated to match the new identity and naming scheme of the DomoPad Android Client. One unfortunate side effect, like the native Android application, is that you will need to manually uninstall, or at least disable, the previous HousePad Android Client Plugin. Please disable the old plugin before installation of the new one or else the two may conflict, causing one or the other to fail to startup.
+
+Version 0.5.1 [12/3/2014]:
+* Fixed a naming issue causing conflicts with some OS X versions, causing historical data retrieval to fail
+
+Version 0.4.0 [6/2014]:
+* Added Android devices with ability to pair to the device
+* Added ability to send push notification alerts
