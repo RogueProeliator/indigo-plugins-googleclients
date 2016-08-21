@@ -293,8 +293,9 @@ class Plugin(RPFramework.RPFrameworkPlugin.RPFrameworkPlugin):
 		
 		# determine the IWS server directory
 		indigoInstallPath = indigo.server.getInstallFolderPath()
+		pluginBasePath = os.getcwd()
 		
-		mainPluginHome = os.path.join(indigoInstallPath, "Plugins/DomoPad Mobile Client.indigoPlugin/Contents/Server Plugin/AndroidClientHelper") 
+		mainPluginHome = os.path.join(pluginBasePath, "Android Client Helper") 
 		iwsPluginHome = os.path.join(indigoInstallPath, "IndigoWebServer/plugins/AndroidClientHelper")
 		
 		indigo.server.log(u'Source IWS directory: ' + mainPluginHome)
