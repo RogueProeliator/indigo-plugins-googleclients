@@ -58,4 +58,21 @@
 			</Field>
 		</ConfigUI>
 	</Action>
+	<Action id="sendControlPageDisplayNotification" deviceFilter="self.domoPadAndroidClient">
+		<Name>Send Control Page Display Command</Name>
+		<CallbackMethod>processControlPageDisplayNotification</CallbackMethod>
+		<ConfigUI>
+			<Field id="cpNotificationMessageTitle" type="label" fontColor="darkGray">
+				<Label>CONTROL PAGE DISPLAY COMMAND</Label>
+			</Field>
+			<Field id="cpNotificationMessageSeparator" type="separator" />
+			<Field id="messageSubInstructions" type="label" fontSize="small" alignWithControl="true">
+				<Label>This action will have Indigo request that the selected control page be displayed on the target Android device. Note that the target device must be configured to allow this action in the Domotics Pad application settings; otherwise the command will be ignored.</Label>
+			</Field>
+			<Field id="controlPageId" type="menu">
+				<Label></Label>
+				<List class="indigo.controlPages" />
+			</Field>
+		</ConfigUI>
+	</Action>
 </Actions>

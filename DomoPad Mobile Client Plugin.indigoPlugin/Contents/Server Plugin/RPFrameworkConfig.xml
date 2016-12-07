@@ -39,6 +39,14 @@
 					</param>
 				</params>
 			</action>
+			<action indigoId="sendControlPageDisplayNotification">
+				<commands />
+				<params>
+					<param indigoId="controlPageId" paramType="ParamTypeInteger" isRequired="True">
+						<invalidValueMessage><![CDATA[Please select the control page to be shown]]></invalidValueMessage>
+					</param>
+				</params>
+			</action>
 		</actions>
 	</pluginConfig>
 </RPFrameworkConfig>
