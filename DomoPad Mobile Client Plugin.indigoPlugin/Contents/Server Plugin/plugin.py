@@ -42,6 +42,7 @@ import domoPadDevices
 INCLUDED_IWS_VERSION = (1,2)
 DOMOPADCOMMAND_SENDNOTIFICATION = u'SendNotification'
 DOMOPADCOMMAND_CPDISPLAYNOTIFICATION = u'SendCPDisplayRequest'
+DOMOPADCOMMAND_DEVICEUPDATEREQUESTNOTIFICATION = u'RequestDeviceStatusUpdate'
 
 
 #/////////////////////////////////////////////////////////////////////////////////////////
@@ -198,6 +199,34 @@ class Plugin(RPFramework.RPFrameworkPlugin.RPFrameworkPlugin):
 					self.logger.error(u'Error sending control page display notification.')	
 			except:
 				self.logger.exception(u'Error sending control page display notification.')	
+		
+		elif rpCommand.commandName == DOMOPADCOMMAND_DEVICEUPDATEREQUESTNOTIFICATION:
+			self.logger.threaddebug(u'Status Update Request Notification Send Command: DevicePairID=' + RPFramework.RPFrameworkUtils.to_unicode(rpCommand.commandPayload))
+			queryStringParams = { u'devicePairingId' : rpCommand.commandPayload }
+			queryStringEncoded = urllib.urlencode(queryStringParams)
+			self.logger.threaddebug(u'Push Notification Payload=' + queryStringEncoded)
+			
+			# this routine is executed asynchronously and thus can directly send the
+			# request to the server
+			conn = httplib.HTTPSConnection("com-duncanware-domopad.appspot.com")
+			conn.connect()
+			conn.putrequest("POST", "/_ah/api/messaging/v1/sendDeviceStatusUpdateRequest")
+			conn.putheader("Content-Type", "application/x-www-form-urlencoded")
+			conn.putheader("Content-Length", "%d" % len(queryStringEncoded))
+			conn.endheaders()
+			conn.send(queryStringEncoded)
+			
+			response = conn.getresponse()
+			responseText = response.read()
+			self.logger.threaddebug(u'Status update request notification response: [' + RPFramework.RPFrameworkUtils.to_unicode(response.status) + u'] ' + responseText)
+		
+			try:
+				if response.status == 204:
+					self.logger.debug(u'Status update request notification sent successfully')
+				else:
+					self.logger.error(u'Error sending status update request notification.')	
+			except:
+				self.logger.exception(u'rror sending status update request notification.')
 			
 	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	# This routine will process the Send Notification action... it will queue up the
@@ -236,6 +265,21 @@ class Plugin(RPFramework.RPFrameworkPlugin.RPFrameworkPlugin):
 		else:
 			self.logger.threaddebug(u'Queuing control page display request notification command for ' + RPFramework.RPFrameworkUtils.to_unicode(action.deviceId))
 			self.pluginCommandQueue.put(RPFramework.RPFrameworkCommand.RPFrameworkCommand(DOMOPADCOMMAND_CPDISPLAYNOTIFICATION, commandPayload=(deviceRegistrationId, controlPageId)))
+	
+	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	# This routine will send the Update Device Status request notification in order to ask
+	# the device to update its status immediately (instead of waiting for its normal 15
+	# minute update interval)
+	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	def processRequestDeviceStatusNotification(self, action):
+		rpDevice = self.managedDevices[action.deviceId]
+		deviceRegistrationId = rpDevice.indigoDevice.pluginProps.get(u'deviceRegistrationId', u'')
+		
+		if deviceRegistrationId == u'':
+			self.logger.error(u'Unable to send status update request notification to ' + RPFramework.RPFrameworkUtils.to_unicode(rpDevice.indigoDevice.deviceId) + u'; the device is not paired.')
+		else:
+			self.logger.threaddebug(u'Queuing device status update request notification command for ' + RPFramework.RPFrameworkUtils.to_unicode(action.deviceId))
+			self.pluginCommandQueue.put(RPFramework.RPFrameworkCommand.RPFrameworkCommand(DOMOPADCOMMAND_DEVICEUPDATEREQUESTNOTIFICATION, commandPayload=deviceRegistrationId))
 		
 			
 	#/////////////////////////////////////////////////////////////////////////////////////
