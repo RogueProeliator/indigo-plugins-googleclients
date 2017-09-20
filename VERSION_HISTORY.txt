@@ -6,6 +6,9 @@ To update to the latest version of the application, please download the latest r
 =================================
 VERSION HISTORY
 =================================
+Version 2.1.1 [September 2017]:
+* Fixed issue with error while pairing a device to Indigo
+
 Version 2.1.0 [February 2017]:
 * Updates to I7 compatibility (and Indigo 7 is now required for this version)
 * Added support for requesting that Android devices show a specific control page, sent via push notification
