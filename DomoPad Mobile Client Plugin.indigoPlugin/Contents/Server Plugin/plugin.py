@@ -30,10 +30,10 @@ import string
 import threading
 import urllib
 import urllib2
+import inspect
 
 import RPFramework
 import domoPadDevices
-#from googleapiclient.discovery import build
 
 
 #/////////////////////////////////////////////////////////////////////////////////////////
@@ -272,14 +272,7 @@ class Plugin(RPFramework.RPFrameworkPlugin.RPFrameworkPlugin):
 	# minute update interval)
 	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	def processRequestDeviceStatusNotification(self, action):
-		rpDevice = self.managedDevices[action.deviceId]
-		deviceRegistrationId = rpDevice.indigoDevice.pluginProps.get(u'deviceRegistrationId', u'')
-		
-		if deviceRegistrationId == u'':
-			self.logger.error(u'Unable to send status update request notification to ' + RPFramework.RPFrameworkUtils.to_unicode(rpDevice.indigoDevice.deviceId) + u'; the device is not paired.')
-		else:
-			self.logger.threaddebug(u'Queuing device status update request notification command for ' + RPFramework.RPFrameworkUtils.to_unicode(action.deviceId))
-			self.pluginCommandQueue.put(RPFramework.RPFrameworkCommand.RPFrameworkCommand(DOMOPADCOMMAND_DEVICEUPDATEREQUESTNOTIFICATION, commandPayload=deviceRegistrationId))
+		requestDeviceStatusNotification(action.deviceId)
 		
 			
 	#/////////////////////////////////////////////////////////////////////////////////////
@@ -431,6 +424,21 @@ class Plugin(RPFramework.RPFrameworkPlugin.RPFrameworkPlugin):
 			responseToQueryText = responseToQuery.read()
 		except:
 			pass
+			
+	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	# This routine will send the Update Device Status request notification in order to ask
+	# the device to update its status immediately (instead of waiting for its normal 15
+	# minute update interval)
+	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	def requestDeviceStatusNotification(self, deviceId):
+		rpDevice = self.managedDevices[deviceId]
+		deviceRegistrationId = rpDevice.indigoDevice.pluginProps.get(u'deviceRegistrationId', u'')
+		
+		if deviceRegistrationId == u'':
+			self.logger.error(u'Unable to send status update request notification to ' + RPFramework.RPFrameworkUtils.to_unicode(rpDevice.indigoDevice.deviceId) + u'; the device is not paired.')
+		else:
+			self.logger.threaddebug(u'Queuing device status update request notification command for ' + RPFramework.RPFrameworkUtils.to_unicode(deviceId))
+			self.pluginCommandQueue.put(RPFramework.RPFrameworkCommand.RPFrameworkCommand(DOMOPADCOMMAND_DEVICEUPDATEREQUESTNOTIFICATION, commandPayload=deviceRegistrationId))
 		
 		
 #/////////////////////////////////////////////////////////////////////////////////////////
@@ -476,18 +484,26 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
 					actionProps = commandArguments.get(u'actionProps')[0]
 					indigo.server.log(actionProps)
 					
-					# get the plugin that was requested from the indigo server
-					indigoPlugin = indigo.server.getPlugin(pluginId)
-					
-					if indigoPlugin is None:
-						commandResponse = u'ERROR: Invalid plugin specified'
-					elif (actionProps is None) or (len(actionProps) == 0):
-						indigoPlugin.executeAction(actionId, deviceId=int(deviceId))
-						commandResponse = u'OK'
+					# get the plugin that was requested from the indigo server... if this is a domoPadMobileClient then we need
+					# to access the plugin object directly to avoid an error dispatching the executeAction
+					if pluginId == u'com.duncanware.domoPadMobileClient':
+						indigoPlugin = indigo.activePlugin
+						
+						if actionId == 'sendUpdateStatusRequestNotification':
+							indigoPlugin.requestDeviceStatusNotification(int(deviceId))
+						else:
+							indigo.server.log(u'Unknown action received for domoPadMobileClient: ' + actionId)
 					else:
-						actionPropDict = eval(actionProps)
-						indigoPlugin.executeAction(actionId, deviceId=int(deviceId), props=actionPropDict)
-						commandResponse = u'OK'
+						indigoPlugin = indigo.server.getPlugin(pluginId)
+						if indigoPlugin is None:
+							commandResponse = u'ERROR: Invalid plugin specified'
+						elif (actionProps is None) or (len(actionProps) == 0):
+							indigoPlugin.executeAction(actionId, deviceId=int(deviceId))
+							commandResponse = u'OK'
+						else:
+							actionPropDict = eval(actionProps)
+							indigoPlugin.executeAction(actionId, deviceId=int(deviceId), props=actionPropDict)
+							commandResponse = u'OK'
 				elif commandName == u'registerAndroidDevice':
 					commandArguments = self.parseArguments(commandMatch.groupdict().get(u'arguments'))
 					deviceId = commandArguments.get(u'deviceId')[0]
