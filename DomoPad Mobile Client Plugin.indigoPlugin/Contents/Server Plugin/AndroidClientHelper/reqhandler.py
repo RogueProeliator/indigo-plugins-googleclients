@@ -29,7 +29,7 @@ from dataAccess import indigosql
 # Constants and configuration variables
 #/////////////////////////////////////////////////////////////////////////////////////////
 MAJOR_VERSION = "1"
-MINOR_VERSION = "2"
+MINOR_VERSION = "3"
 
 
 #/////////////////////////////////////////////////////////////////////////////////////////
@@ -401,8 +401,11 @@ class IndigoClientHelperHandler(BaseRequestHandler):
 				configParams["sqlUsername"] = prefRootNode.find("postgresqlUser").text
 				configParams["sqlPassword"] = prefRootNode.find("postgresqlPassword").text
 			else:
+				sqlLiteFilePath = prefRootNode.find("sqliteFilePath").text
+				if sqlLiteFilePath == u'':
+					sqlLiteFilePath = prefRootNode.find("sqliteFilePath").text
 				configParams["dbType"] = indigosql.kDbType_sqlite
-				configParams["dbName"] = prefRootNode.find("sqliteFilePath").text
+				configParams["dbName"] = sqlLiteFilePath
 		except:
 			pass
 			

@@ -47,6 +47,14 @@
 					</param>
 				</params>
 			</action>
+			<action indigoId="sendSpeakAnnouncementNotification">
+				<commands />
+				<params>
+					<param indigoId="announcement" paramType="ParamTypeString" isRequired="True">
+						<invalidValueMessage><![CDATA[Please enter the text of the announcement to speak]]></invalidValueMessage>
+					</param>
+				</params>
+			</action>
 		</actions>
 	</pluginConfig>
 </RPFrameworkConfig>

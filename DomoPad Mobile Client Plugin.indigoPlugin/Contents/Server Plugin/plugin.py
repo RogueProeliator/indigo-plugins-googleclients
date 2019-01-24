@@ -39,8 +39,9 @@ import domoPadDevices
 #/////////////////////////////////////////////////////////////////////////////////////////
 # Constants and configuration variables
 #/////////////////////////////////////////////////////////////////////////////////////////
-INCLUDED_IWS_VERSION = (1,2)
+INCLUDED_IWS_VERSION = (1,3)
 DOMOPADCOMMAND_SENDNOTIFICATION = u'SendNotification'
+DOMOPADCOMMAND_SPEAKANNOUNCEMENTNOTIFICATION = u'SendTextToSpeechNotification'
 DOMOPADCOMMAND_CPDISPLAYNOTIFICATION = u'SendCPDisplayRequest'
 DOMOPADCOMMAND_DEVICEUPDATEREQUESTNOTIFICATION = u'RequestDeviceStatusUpdate'
 
@@ -165,6 +166,35 @@ class Plugin(RPFramework.RPFrameworkPlugin.RPFrameworkPlugin):
 				except:
 					self.logger.exception(u'Error sending push notification.')	
 					
+		elif rpCommand.commandName == DOMOPADCOMMAND_SPEAKANNOUNCEMENTNOTIFICATION:
+			self.logger.threaddebug(u'Speak Announcement Notification Send Command: DevicePairID=' + RPFramework.RPFrameworkUtils.to_unicode(rpCommand.commandPayload[0]) + u'; Msg=' + RPFramework.RPFrameworkUtils.to_unicode(rpCommand.commandPayload[1]))
+			
+			queryStringParams = { u'devicePairingId' : rpCommand.commandPayload[0], u'message' : RPFramework.RPFrameworkUtils.to_unicode(rpCommand.commandPayload[1]) }
+			queryStringEncoded = urllib.urlencode(queryStringParams)
+			self.logger.threaddebug(u'Push Notification Payload=' + queryStringEncoded)
+			
+			# this routine is executed asynchronously and thus can directly send the
+			# request to the server
+			conn = httplib.HTTPSConnection("com-duncanware-domopad.appspot.com")
+			conn.connect()
+			conn.putrequest("POST", "/_ah/api/messaging/v1/sendAnnounceTextRequest")
+			conn.putheader("Content-Type", "application/x-www-form-urlencoded")
+			conn.putheader("Content-Length", "%d" % len(queryStringEncoded))
+			conn.endheaders()
+			conn.send(queryStringEncoded)
+
+			response = conn.getresponse()
+			responseText = response.read()
+			self.logger.threaddebug(u'Speak announcement notification response: [' + RPFramework.RPFrameworkUtils.to_unicode(response.status) + u'] ' + responseText)
+		
+			try:
+				if response.status == 204:
+					self.logger.debug(u'Speak announcement notification sent successfully')
+				else:
+					self.logger.error(u'Error sending speak announcement notification.')	
+			except:
+				self.logger.exception(u'Error sending speak announcement notification.')	
+					
 		elif rpCommand.commandName == DOMOPADCOMMAND_CPDISPLAYNOTIFICATION:
 			self.logger.threaddebug(u'Control Page Display Notification Send Command: DevicePairID=' + RPFramework.RPFrameworkUtils.to_unicode(rpCommand.commandPayload[0]) + u'; Page=' + RPFramework.RPFrameworkUtils.to_unicode(rpCommand.commandPayload[1]))
 
@@ -248,6 +278,22 @@ class Plugin(RPFramework.RPFrameworkPlugin.RPFrameworkPlugin):
 		else:
 			self.logger.threaddebug(u'Queuing push notification command for ' + RPFramework.RPFrameworkUtils.to_unicode(action.deviceId))
 			self.pluginCommandQueue.put(RPFramework.RPFrameworkCommand.RPFrameworkCommand(DOMOPADCOMMAND_SENDNOTIFICATION, commandPayload=(deviceRegistrationId, messageToSend, importanceLevel, action1Name, action1Group, action2Name, action2Group)))
+			
+	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	# This routine will send the Speak Announcement command to an Android Device
+	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	def processSpeakAnnouncementNotification(self, action):
+		rpDevice = self.managedDevices[action.deviceId]
+		deviceRegistrationId = rpDevice.indigoDevice.pluginProps.get(u'deviceRegistrationId', u'')
+		announcementMsg = action.props.get(u'announcement', '')
+		
+		if deviceRegistrationId == u'':
+			self.logger.error(u'Unable to send speak announcement request notification to ' + RPFramework.RPFrameworkUtils.to_unicode(rpDevice.indigoDevice.deviceId) + u'; the device is not paired.')
+		elif announcementMsg == u'':
+			self.logger.error(u'Unable to send speak announcement request notification to ' + RPFramework.RPFrameworkUtils.to_unicode(rpDevice.indigoDevice.deviceId) + u'; no announcement text was entered.')
+		else:
+			self.logger.threaddebug(u'Queuing peak announcement request notification command for ' + RPFramework.RPFrameworkUtils.to_unicode(action.deviceId))
+			self.pluginCommandQueue.put(RPFramework.RPFrameworkCommand.RPFrameworkCommand(DOMOPADCOMMAND_SPEAKANNOUNCEMENTNOTIFICATION, commandPayload=(deviceRegistrationId, announcementMsg)))
 			
 	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	# This routine will send the Control Page Display Command to a Android device (in

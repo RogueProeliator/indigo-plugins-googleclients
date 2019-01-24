@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <Actions>
-	<Action id="sendPushNotification" deviceFilter="self.domoPadAndroidClient">
+	<Action id="sendPushNotification" uiPath="DeviceActions" deviceFilter="self.domoPadAndroidClient">
 		<Name>Send Push Notification Message</Name>
 		<CallbackMethod>processSendNotification</CallbackMethod>
 		<ConfigUI>
@@ -58,7 +58,23 @@
 			</Field>
 		</ConfigUI>
 	</Action>
-	<Action id="sendControlPageDisplayNotification" deviceFilter="self.domoPadAndroidClient">
+	<Action id="sendSpeakAnnouncementNotification" uiPath="DeviceActions" deviceFilter="self.domoPadAndroidClient">
+		<Name>Send Speak Announcement Command (BETA)</Name>
+		<CallbackMethod>processSpeakAnnouncementNotification</CallbackMethod>
+		<ConfigUI>
+			<Field id="cpNotificationMessageTitle" type="label" fontColor="darkGray">
+				<Label>SPEAK ANNOUNCEMENT COMMAND</Label>
+			</Field>
+			<Field id="annNotificationMessageSeparator" type="separator" />
+			<Field id="messageSubInstructions" type="label" fontSize="small" alignWithControl="true">
+				<Label>This action will have Indigo request that the target Android device speak the entered text.</Label>
+			</Field>
+			<Field id="announcement" type="textfield">
+				<Label>Announcement:</Label>
+			</Field>
+		</ConfigUI>
+	</Action>
+	<Action id="sendControlPageDisplayNotification" uiPath="DeviceActions" deviceFilter="self.domoPadAndroidClient">
 		<Name>Send Control Page Display Command</Name>
 		<CallbackMethod>processControlPageDisplayNotification</CallbackMethod>
 		<ConfigUI>
@@ -75,7 +91,7 @@
 			</Field>
 		</ConfigUI>
 	</Action>
-	<Action id="sendUpdateStatusRequestNotification" deviceFilter="self.domoPadAndroidClient">
+	<Action id="sendUpdateStatusRequestNotification" uiPath="DeviceActions" deviceFilter="self.domoPadAndroidClient">
 		<Name>Request Status from Device</Name>
 		<CallbackMethod>processRequestDeviceStatusNotification</CallbackMethod>
 	</Action>
