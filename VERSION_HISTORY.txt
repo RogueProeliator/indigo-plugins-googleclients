@@ -6,6 +6,10 @@ To update to the latest version of the application, please download the latest r
 =================================
 VERSION HISTORY
 =================================
+Version 2.2.3 [May 2019]:
+* Added Send Speak Announcement notification to speak announcement on device
+* Updated to latest Indigo v7.3 standards for notification checking
+
 Version 2.1.1 [September 2017]:
 * Fixed issue with error while pairing a device to Indigo
 

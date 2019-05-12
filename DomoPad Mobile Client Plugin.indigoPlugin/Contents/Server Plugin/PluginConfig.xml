@@ -1,9 +1,16 @@
 <?xml version="1.0"?>
 <PluginConfig>
-	<Field id="indigoConnTitle" type="label" fontColor="darkGray">
+	<Field id="pluginTitleLabel" type="label" fontSize="large">
 		<Label>INDIGO CONNECTION</Label>
 	</Field>
-	<Field id="indigoConnSectionSeparator0" type="separator" />
+	<Field id="pluginAuthorLabel" type="label" fontSize="small">
+        <Label>Developed by RogueProeliator</Label>
+    </Field>
+    
+	<Field id="headerSpacer" type="label" fontSize="mini"/>
+	<Field id="updaterOptionsTitle" type="label" fontColor="darkGray" fontSize="small">
+		<Label>IWS PLUGIN</Label>
+	</Field>
 	<Field type="label" id="indigoConnInstructions" fontSize="small">
 		<Label>This plugin is able to manage the Indigo Web Server (IWS) plugin that allows HousePad to communicate back to the server over the web. Your username/password is needed in order to connect to the web server to manage the plugin. If you do not enter your information here Domotics Pad WILL continue to operation, but updates will need to be manually installed.</Label>
 	</Field>
@@ -17,6 +24,24 @@
 	   <Label>Indigo IWS Port:</Label>
 	</Field>
 
+	<Field id="headerSpacer" type="label" fontSize="mini"/>
+    <Field id="updaterOptionsTitle" type="label" fontColor="darkGray" fontSize="small">
+		<Label>UPDATE NOTIFICATION OPTIONS</Label>
+	</Field>
+	<Field id="updaterSeparator1" type="separator" />
+    <Field type="label" id="updaterInstructions" fontSize="small">
+		<Label>For Indigo v7.2 and earlier, this plugin may optionally email you to notify when updates are available; to do so, you must enable the notifications, enter an email address and ensure that email sending is configured in Indigo's preferences.</Label>
+	</Field>
+	<Field id="updaterEmailsEnabled" type="checkbox" defaultValue="true" fontSize="small">
+	   <Label>Enable Update Notifications:</Label>
+	</Field>
+	<Field id="updaterEmail" type="textfield">
+	   <Label>Notifications Email:</Label>
+	</Field>
+	
+	<Field type="label" id="debugSpacer" fontSize="small">
+		<Label></Label>
+	</Field>
 	<Field id="debugOptionsTitle" type="label" fontColor="darkGray">
 		<Label>DEBUGGING OPTIONS</Label>
 	</Field>

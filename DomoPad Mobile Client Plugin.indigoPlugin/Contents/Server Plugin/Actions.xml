@@ -59,7 +59,7 @@
 		</ConfigUI>
 	</Action>
 	<Action id="sendSpeakAnnouncementNotification" uiPath="DeviceActions" deviceFilter="self.domoPadAndroidClient">
-		<Name>Send Speak Announcement Command (BETA)</Name>
+		<Name>Send Speak Announcement Command</Name>
 		<CallbackMethod>processSpeakAnnouncementNotification</CallbackMethod>
 		<ConfigUI>
 			<Field id="cpNotificationMessageTitle" type="label" fontColor="darkGray">
