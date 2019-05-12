@@ -8,9 +8,10 @@
     </Field>
     
 	<Field id="headerSpacer" type="label" fontSize="mini"/>
-	<Field id="updaterOptionsTitle" type="label" fontColor="darkGray" fontSize="small">
+	<Field id="iwsOptionsTitle" type="label" fontColor="darkGray" fontSize="small">
 		<Label>IWS PLUGIN</Label>
 	</Field>
+	<Field id="iwsSectionSeparator" type="separator" />
 	<Field type="label" id="indigoConnInstructions" fontSize="small">
 		<Label>This plugin is able to manage the Indigo Web Server (IWS) plugin that allows HousePad to communicate back to the server over the web. Your username/password is needed in order to connect to the web server to manage the plugin. If you do not enter your information here Domotics Pad WILL continue to operation, but updates will need to be manually installed.</Label>
 	</Field>
@@ -24,7 +25,7 @@
 	   <Label>Indigo IWS Port:</Label>
 	</Field>
 
-	<Field id="headerSpacer" type="label" fontSize="mini"/>
+	<Field id="updateNotificationSpacer" type="label" fontSize="small"/>
     <Field id="updaterOptionsTitle" type="label" fontColor="darkGray" fontSize="small">
 		<Label>UPDATE NOTIFICATION OPTIONS</Label>
 	</Field>
