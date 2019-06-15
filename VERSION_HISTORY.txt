@@ -6,7 +6,7 @@ To update to the latest version of the application, please download the latest r
 =================================
 VERSION HISTORY
 =================================
-Version 2.2.4 [June 2019]:
+Version 2.2.5 [June 2019]:
 * Bug Fix - Allows unicode characters in speak announcement notifications
 * Adds ability to perform standard substitutions on speak announcement notifications
 

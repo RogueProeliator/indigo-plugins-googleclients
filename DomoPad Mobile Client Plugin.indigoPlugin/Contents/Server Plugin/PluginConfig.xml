@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <PluginConfig>
 	<Field id="pluginTitleLabel" type="label" fontSize="large">
-		<Label>INDIGO CONNECTION</Label>
+		<Label>Domotics Pad Mobile Client</Label>
 	</Field>
 	<Field id="pluginAuthorLabel" type="label" fontSize="small">
         <Label>Developed by RogueProeliator</Label>
