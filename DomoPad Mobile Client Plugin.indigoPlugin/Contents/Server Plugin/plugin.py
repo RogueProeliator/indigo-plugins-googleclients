@@ -169,8 +169,9 @@ class Plugin(RPFramework.RPFrameworkPlugin.RPFrameworkPlugin):
 		elif rpCommand.commandName == DOMOPADCOMMAND_SPEAKANNOUNCEMENTNOTIFICATION:
 			self.logger.threaddebug(u'Speak Announcement Notification Send Command: DevicePairID=' + RPFramework.RPFrameworkUtils.to_unicode(rpCommand.commandPayload[0]) + u'; Msg=' + RPFramework.RPFrameworkUtils.to_unicode(rpCommand.commandPayload[1]))
 			
-			queryStringParams = { u'devicePairingId' : rpCommand.commandPayload[0], u'message' : RPFramework.RPFrameworkUtils.to_unicode(rpCommand.commandPayload[1]) }
-			queryStringEncoded = urllib.urlencode(queryStringParams)
+			messageExpanded = self.substituteIndigoValues(RPFramework.RPFrameworkUtils.to_unicode(rpCommand.commandPayload[1]), rpCommand.commandPayload[2], [])
+			queryStringParams = { u'devicePairingId' : rpCommand.commandPayload[0], u'message' : RPFramework.RPFrameworkUtils.to_unicode(messageExpanded) }
+			queryStringEncoded = urllib.urlencode(queryStringParams, 'utf-8')
 			self.logger.threaddebug(u'Push Notification Payload=' + queryStringEncoded)
 			
 			# this routine is executed asynchronously and thus can directly send the
@@ -293,7 +294,7 @@ class Plugin(RPFramework.RPFrameworkPlugin.RPFrameworkPlugin):
 			self.logger.error(u'Unable to send speak announcement request notification to ' + RPFramework.RPFrameworkUtils.to_unicode(rpDevice.indigoDevice.deviceId) + u'; no announcement text was entered.')
 		else:
 			self.logger.threaddebug(u'Queuing peak announcement request notification command for ' + RPFramework.RPFrameworkUtils.to_unicode(action.deviceId))
-			self.pluginCommandQueue.put(RPFramework.RPFrameworkCommand.RPFrameworkCommand(DOMOPADCOMMAND_SPEAKANNOUNCEMENTNOTIFICATION, commandPayload=(deviceRegistrationId, announcementMsg)))
+			self.pluginCommandQueue.put(RPFramework.RPFrameworkCommand.RPFrameworkCommand(DOMOPADCOMMAND_SPEAKANNOUNCEMENTNOTIFICATION, commandPayload=(deviceRegistrationId, announcementMsg, rpDevice)))
 			
 	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	# This routine will send the Control Page Display Command to a Android device (in
