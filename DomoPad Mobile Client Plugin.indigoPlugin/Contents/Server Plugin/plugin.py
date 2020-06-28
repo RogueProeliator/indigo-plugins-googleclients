@@ -34,6 +34,7 @@ import inspect
 
 import RPFramework
 import domoPadDevices
+import googleHomeDevices
 
 
 #/////////////////////////////////////////////////////////////////////////////////////////
@@ -326,6 +327,62 @@ class Plugin(RPFramework.RPFrameworkPlugin.RPFrameworkPlugin):
 	# Configuration Dialog Callback Routines
 	#/////////////////////////////////////////////////////////////////////////////////////
 	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	# Called in order to load the list of devices which have been selected for publishing
+	# to Google Home/Assistant
+	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	def getPublishedHomeDevices(self, filter="", valuesDict=None, typeId="", targetId=0):
+		# loop through each defined device and capture the ones that have
+		# been flagged for publishing
+		publishedDevicesLst = []
+		for device in indigo.devices:
+			if device.sharedProps.get('googleClientPublishHome', False) == True:
+				publishedDevicesLst.append((device.id, device.name))
+		
+		# return the list of devices as a dynamic menu return
+		return publishedDevicesLst
+
+	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	# Called in order to load the list of devices which are NOT published to Google
+	# Home
+	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	def getNonPublishedHomeDevices(self, filter="", valuesDict=None, typeId="", targetId=0):
+		# loop through all Indigo devices, returning those without the googleClientPublishHome
+		# or set to False
+		nonPublishedDevices = []
+		for device in indigo.devices.iter(filter="indigo.relay,indigo.dimmer,indigo.thermostat,indigo.sensor"):
+			if device.sharedProps.get('googleClientPublishHome', False) == False:
+				nonPublishedDevices.append((device.id, device.name))
+		return nonPublishedDevices
+
+	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	# Retrieves the list of available (supported) devices types as defined by the
+	# Google Assistant
+	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	def getGoogleDeviceTypes(self, filter="", valuesDict=None, typeId="", targetId=0):
+		listItems = []
+		for deviceType in sorted(googleHomeDevices.googleDeviceTypesDefn.iterkeys()):
+			deviceDefn = googleHomeDevices.googleDeviceTypesDefn[deviceType]
+			listItems.append((deviceType, deviceDefn['Device']))
+		return listItems
+
+	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	# Publishes the selected device to Google Home; it should add the proper global
+	# properties and reload to the Published Device interface with it selected so that
+	# the user may finish configuration
+	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	def addPublishedHomeDevice(self, valuesDict=None, typeId="", devId=0):
+		# pull the device... the selected value in the add should be the Indigo device ID
+		selectedId = int(valuesDict.get('addPublishedDeviceSelect', 0))
+		if selectedId > 0:
+			device = indigo.devices[selectedId]
+			globalProps = device.sharedProps
+			globalProps['googleClientPublishHome'] = True
+			globalProps['googleClientAsstName'] = device.name
+			globalProps['googleClientAsstType'] = googleHomeDevices.mapIndigoDeviceToGoogleType(device)
+			device.replaceSharedPropsOnServer(globalProps)
+		return valuesDict
+
+	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	# This routine is called back from the configuration dialog whenever the user has
 	# clicked the button to clear the value of the device pairing
 	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -333,14 +390,6 @@ class Plugin(RPFramework.RPFrameworkPlugin.RPFrameworkPlugin):
 		valuesDict[u'deviceRegistrationId'] = u''
 		return valuesDict
 		
-	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	# This routine will be called when the plugin's configuration dialog closes; we need
-	# to check for the IWS plugin now since the username/password may have been updated
-	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	def closedPrefsConfigUi(self, valuesDict, userCancelled):
-		super(Plugin, self).closedPrefsConfigUi(valuesDict, userCancelled)
-		self.processIWSUpdateCheck()
-	
 	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	# This routine is called whenever the user has clicked to clear his/her selection of
 	# an action in slot 1

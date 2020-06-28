@@ -3,13 +3,13 @@
 <plist version="1.0">
 <dict>
 	<key>PluginVersion</key>
-	<string>2.2.6</string>
+	<string>3.0.0</string>
 	<key>ServerApiVersion</key>
-	<string>2.0.0</string>
+	<string>2.3.0</string>
 	<key>IwsApiVersion</key>
 	<string>1.0.0</string>
 	<key>CFBundleDisplayName</key>
-	<string>Domotics Pad Mobile Client</string>
+	<string>Domotics Pad Google Client</string>
 	<key>CFBundleIdentifier</key>
 	<string>com.duncanware.domoPadMobileClient</string>
 	<key>CFBundleVersion</key>

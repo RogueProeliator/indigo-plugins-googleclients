@@ -1,44 +1,14 @@
 <?xml version="1.0"?>
 <PluginConfig>
 	<Field id="pluginTitleLabel" type="label" fontSize="large">
-		<Label>Domotics Pad Mobile Client</Label>
+		<Label>Domotics Pad Google Client</Label>
 	</Field>
 	<Field id="pluginAuthorLabel" type="label" fontSize="small">
         <Label>Developed by RogueProeliator</Label>
     </Field>
-    
-	<Field id="headerSpacer" type="label" fontSize="mini"/>
-	<Field id="iwsOptionsTitle" type="label" fontColor="darkGray" fontSize="small">
-		<Label>IWS PLUGIN</Label>
-	</Field>
-	<Field id="iwsSectionSeparator" type="separator" />
-	<Field type="label" id="indigoConnInstructions" fontSize="small">
-		<Label>This plugin is able to manage the Indigo Web Server (IWS) plugin that allows HousePad to communicate back to the server over the web. Your username/password is needed in order to connect to the web server to manage the plugin. If you do not enter your information here Domotics Pad WILL continue to operation, but updates will need to be manually installed.</Label>
-	</Field>
-	<Field id="indigoUsername" type="textfield">
-	   <Label>Indigo Username:</Label>
-	</Field>
-	<Field id="indigoPassword" type="textfield">
-	   <Label>Indigo Password:</Label>
-	</Field>
-	<Field id="indigoPort" type="textfield" defaultValue="8176">
-	   <Label>Indigo IWS Port:</Label>
-	</Field>
-
-	<Field id="updateNotificationSpacer" type="label" fontSize="small"/>
-    <Field id="updaterOptionsTitle" type="label" fontColor="darkGray" fontSize="small">
-		<Label>UPDATE NOTIFICATION OPTIONS</Label>
-	</Field>
-	<Field id="updaterSeparator1" type="separator" />
-    <Field type="label" id="updaterInstructions" fontSize="small">
-		<Label>For Indigo v7.2 and earlier, this plugin may optionally email you to notify when updates are available; to do so, you must enable the notifications, enter an email address and ensure that email sending is configured in Indigo's preferences.</Label>
-	</Field>
-	<Field id="updaterEmailsEnabled" type="checkbox" defaultValue="true" fontSize="small">
-	   <Label>Enable Update Notifications:</Label>
-	</Field>
-	<Field id="updaterEmail" type="textfield">
-	   <Label>Notifications Email:</Label>
-	</Field>
+	<Field id="pluginDescriptionLabel" type="label" fontSize="small" fontColor="darkGray">
+        <Label>Provides advanced interactions when used with the Domotics Pad Android Client and allows control of Indigo-connected devices via Google Home / Assistant.</Label>
+    </Field>
 	
 	<Field type="label" id="debugSpacer" fontSize="small">
 		<Label></Label>
