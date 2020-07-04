@@ -29,7 +29,7 @@ from dataAccess import indigosql
 # Constants and configuration variables
 #/////////////////////////////////////////////////////////////////////////////////////////
 MAJOR_VERSION = "1"
-MINOR_VERSION = "3"
+MINOR_VERSION = "4"
 
 
 #/////////////////////////////////////////////////////////////////////////////////////////
@@ -360,6 +360,23 @@ class IndigoClientHelperHandler(BaseRequestHandler):
 			if sqlConn is not None:
 				sqlConn.CloseSqlConnection()		
 	getDeviceHistory.exposed = True
+
+
+	#/////////////////////////////////////////////////////////////////////////////////////
+	# Google Home/Assistant Routines
+	#/////////////////////////////////////////////////////////////////////////////////////
+	def googleHomeSyncAllDevices(self):
+		# execute the GET against the plugin's web server now
+		conn = httplib.HTTPConnection("localhost", "9176")
+		conn.connect()
+		request = conn.putrequest("GET", "/AndroidClientHelper/googleHomeSyncAllDevices")
+		conn.endheaders()
+
+		responseToAction = conn.getresponse()
+		responseToActionText = responseToAction.read()
+	
+		return responseToActionText
+	googleHomeSyncAllDevices.exposed = True
 	
 	
 	#/////////////////////////////////////////////////////////////////////////////////////

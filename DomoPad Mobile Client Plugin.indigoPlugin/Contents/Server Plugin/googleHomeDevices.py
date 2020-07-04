@@ -30,41 +30,40 @@ googleDeviceTypesDefn = {
     'action.devices.types.DOOR': 
         {'Device': 'Door', 'DeviceType': 'action.devices.types.DOOR',
             'Description': 'Door can be opened and closed, potentially in more than one direction.',
-            'Traits': ['OpenClose']},
+            'Traits': ['action.devices.traits.OpenClose']},
     'action.devices.types.FAN': 
         {'Device': 'Fan', 'DeviceType': 'action.devices.types.FAN', 
             'Description': 'Fans can typically be turned on and off and have speed settings. Some fans may also have additional supported modes, such as fan direction/orientation (for example, a wall unit may have settings to adjust whether it blows up or down).', 
-            'Traits': ['FanSpeed', 'Modes', 'OnOff', 'Toggles']},
+            'Traits': ['action.devices.traits.FanSpeed', 'action.devices.traits.Modes', 'action.devices.traits.OnOff', 'action.devices.traits.Toggles']},
     'action.devices.types.LIGHT': 
         {'Device': 'Light', 'DeviceType': 'action.devices.types.LIGHT',
             'Description': 'This type indicates that the device gets the light bulb icon and some light synonyms/aliases.',
-            'Traits': ['Brightness', 'ColorSetting', 'OnOff']},
+            'Traits': ['action.devices.traits.Brightness', 'action.devices.traits.ColorSetting', 'action.devices.traits.OnOff']},
     'action.devices.types.LOCK': 
         {'Device': 'Lock', 'DeviceType': 'action.devices.types.LOCK',
             'Description': 'Locks can lock, unlock, and report a locked state. Unlocking is a security sensitive action which can require two-factor authentication.',
-            'Traits': ['LockUnlock']},
+            'Traits': ['action.devices.traits.LockUnlock']},
     'action.devices.types.OUTLET': 
         {'Device': 'Outlet', 'DeviceType': 'action.devices.types.OUTLET',
             'Description': 'This type indicates that the device gets the plug icon and some outlet synonyms/aliases.',
-            'Traits': ['OnOff']},
+            'Traits': ['action.devices.traits.OnOff']},
     'action.devices.types.SENSOR':
         {'Device': 'Sensor', 'DeviceType': 'action.devices.types.SENSOR',
             'Description': 'A single sensor can serve multiple functions, such as monitoring both temperature and humidity. Sensors may report either or both quantitative—for example, carbon monoxide and smoke level measured at parts per million—and qualitative measurements (such as whether air quality is healthy or unhealthy).',
-            'Traits': ['HumiditySetting', 'Modes', 'OnOff', 'SensorState']},
+            'Traits': ['action.devices.traits.HumiditySetting', 'action.devices.traits.Modes', 'action.devices.traits.OnOff', 'action.devices.traits.SensorState']},
     'action.devices.types.SWITCH':
         {'Device': 'Switch', 'DeviceType': 'action.devices.types.SWITCH',
             'Description': 'This type indicates that the device gets the switch icon and some switch synonyms/aliases.',
-            'Traits': ['OnOff']},
+            'Traits': ['action.devices.traits.OnOff']},
     'action.devices.types.THERMOSTAT':
         {'Device': 'Thermostat', 'DeviceType': 'action.devices.types.THERMOSTAT',
             'Description': 'Thermostats are temperature-managing devices, with set points and modes. This separates them from heaters and AC units which may only have modes and settings (for example, high/low) vs a temperature target.',
-            'Traits': ['TemperatureSetting']},
+            'Traits': ['action.devices.traits.TemperatureSetting']},
     'action.devices.types.WINDOW':
         {'Device': 'Window', 'DeviceType': 'action.devices.types.WINDOW',
             'Description': 'Windows can be opened and closed, optionally with sections that open in different directions, and may also be locked and unlocked.',
-            'Traits': ['LockUnlock', 'OpenClose']}
+            'Traits': ['action.devices.traits.LockUnlock', 'action.devices.traits.OpenClose']}
 }
-
 
 #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 # Maps an Indigo device (object) to the proper/default Google Assistant device type
@@ -81,3 +80,39 @@ def mapIndigoDeviceToGoogleType(device):
         return 'action.devices.types.SENSOR'
     else:
         return ''
+
+
+#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+# Builds a Google Device sync definition for the given device utilizing the Global Props
+# defined by the user as well as the Indigo type
+#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+def buildGoogleHomeDeviceDefinition(device):
+    # do not check the published flag so that this routine may be used without explicit
+    # options... full implementations should only pass in published devices
+    globalProps = device.sharedProps
+
+    # retrieve the device type for the Google Assistant device
+    googleDevType = globalProps.get('googleClientAsstType', '')
+    if googleDevType == '':
+        googleDevType = mapIndigoDeviceToGoogleType(device)
+
+    # retrieve the name of the device as defined by the user
+    googleDevName = globalProps.get('googleClientAsstName', '')
+    if googleDevName == '':
+        googleDevName = device.name
+
+    deviceDefnDict = {
+        'id': RPFramework.RPFrameworkUtils.to_unicode(device.id),
+        'type': googleDeviceTypesDefn[googleDevType]['DeviceType'],
+        'traits': list(googleDeviceTypesDefn[googleDevType]['Traits']),
+        'name': {
+            'defaultNames': [googleDevName],
+            'name': googleDevName
+        },
+        'willReportState': False,
+        'deviceInfo': {
+            'manufacturer': 'Indigo',
+            'model': device.model
+        }
+    }
+    return deviceDefnDict

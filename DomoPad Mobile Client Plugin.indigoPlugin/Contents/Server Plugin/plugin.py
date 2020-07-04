@@ -40,7 +40,7 @@ import googleHomeDevices
 #/////////////////////////////////////////////////////////////////////////////////////////
 # Constants and configuration variables
 #/////////////////////////////////////////////////////////////////////////////////////////
-INCLUDED_IWS_VERSION = (1,3)
+INCLUDED_IWS_VERSION = (1,4)
 DOMOPADCOMMAND_SENDNOTIFICATION = u'SendNotification'
 DOMOPADCOMMAND_SPEAKANNOUNCEMENTNOTIFICATION = u'SendTextToSpeechNotification'
 DOMOPADCOMMAND_CPDISPLAYNOTIFICATION = u'SendCPDisplayRequest'
@@ -336,7 +336,10 @@ class Plugin(RPFramework.RPFrameworkPlugin.RPFrameworkPlugin):
 		publishedDevicesLst = []
 		for device in indigo.devices:
 			if device.sharedProps.get('googleClientPublishHome', False) == True:
-				publishedDevicesLst.append((device.id, device.name))
+				deviceDispName = device.sharedProps['googleClientAsstName']
+				if device.name != deviceDispName:
+					deviceDispName = deviceDispName + " (" + device.name + ")"
+				publishedDevicesLst.append((device.id, deviceDispName))
 		
 		# return the list of devices as a dynamic menu return
 		return publishedDevicesLst
@@ -364,6 +367,41 @@ class Plugin(RPFramework.RPFrameworkPlugin.RPFrameworkPlugin):
 			deviceDefn = googleHomeDevices.googleDeviceTypesDefn[deviceType]
 			listItems.append((deviceType, deviceDefn['Device']))
 		return listItems
+
+	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	# Called whenever the user has selected a device from the list of published Google
+	# Assistant devices... show the "Google" device details
+	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	def publishedHomeDeviceSelected(self, valuesDict=None, typeId="", devId=0):
+		try:
+			device = indigo.devices.get(int(valuesDict["publishedDevices"]), None)
+			valuesDict["deviceDetailsPublishedName"] = device.sharedProps['googleClientAsstName']
+			valuesDict["deviceDetailsPublishedType"] = device.sharedProps['googleClientAsstType']
+			valuesDict['publishedDeviceSelected'] = True
+		except:
+			self.logger.exception(u'Failed to load published device properties')
+		return valuesDict
+
+	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	# Called whenever the user has clicked to update the published Google Home (such as
+	# changing the device name or type)
+	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	def publishedHomeDevicesUpdate(self, valuesDict=None, typeId="", devId=0):
+		try:
+			device = indigo.devices.get(int(valuesDict["publishedDevices"]), None)
+			globalProps = device.sharedProps
+
+			globalProps['googleClientAsstName'] = valuesDict["deviceDetailsPublishedName"]
+			globalProps['googleClientAsstType'] = valuesDict["deviceDetailsPublishedType"]
+			device.replaceSharedPropsOnServer(globalProps)
+
+			valuesDict["publishedDevices"] = None
+			valuesDict['publishedDeviceSelected'] = False
+			valuesDict["deviceDetailsPublishedName"] = ''
+			valuesDict["deviceDetailsPublishedType"] = None
+		except:
+			self.logger.exception(u'Failed to update published device properties')
+		return valuesDict
 
 	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	# Publishes the selected device to Google Home; it should add the proper global
@@ -536,6 +574,22 @@ class Plugin(RPFramework.RPFrameworkPlugin.RPFrameworkPlugin):
 			self.logger.threaddebug(u'Queuing device status update request notification command for ' + RPFramework.RPFrameworkUtils.to_unicode(deviceId))
 			self.pluginCommandQueue.put(RPFramework.RPFrameworkCommand.RPFrameworkCommand(DOMOPADCOMMAND_DEVICEUPDATEREQUESTNOTIFICATION, commandPayload=deviceRegistrationId))
 		
+	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	# Return the list of devices configured for publishing to the Google Assistant in the
+	# Google Smart Actions sync format
+	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	def getGoogleHomeSyncResponse(self):
+		# loop through each defined device and capture the ones that have
+		# been flagged for publishing
+		publishedDevicesLst = []
+		for device in indigo.devices:
+			if device.sharedProps.get('googleClientPublishHome', False) == True:
+				publishedDevicesLst.append(googleHomeDevices.buildGoogleHomeDeviceDefinition(device))
+		
+		# return the list of devices back to the calling routine; these are in the
+		# proper format for a return to Google
+		return publishedDevicesLst
+	
 		
 #/////////////////////////////////////////////////////////////////////////////////////////
 #/////////////////////////////////////////////////////////////////////////////////////////
@@ -663,6 +717,11 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
 							
 					if commandResponse != u'OK':
 						indigo.server.log(u'Received status update for unknown device with Pairing ID: ' + pairingId, isError=True)
+				
+				elif commandName == u'googleHomeSyncAllDevices':
+					indigoPlugin = indigo.activePlugin
+					googleDevList = indigoPlugin.getGoogleHomeSyncResponse()
+					commandResponse = json.dumps(googleDevList)
 		
 			# send whatever response was generated back to the caller
 			self.request.sendall(commandResponse)
