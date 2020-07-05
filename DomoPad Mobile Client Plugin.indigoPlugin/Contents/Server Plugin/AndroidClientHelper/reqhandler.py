@@ -365,6 +365,10 @@ class IndigoClientHelperHandler(BaseRequestHandler):
 	#/////////////////////////////////////////////////////////////////////////////////////
 	# Google Home/Assistant Routines
 	#/////////////////////////////////////////////////////////////////////////////////////
+	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	# Called by Firebase functions in order to request the device definitions for all
+	# devices
+	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	def googleHomeSyncAllDevices(self):
 		# execute the GET against the plugin's web server now
 		conn = httplib.HTTPConnection("localhost", "9176")
@@ -378,7 +382,23 @@ class IndigoClientHelperHandler(BaseRequestHandler):
 		return responseToActionText
 	googleHomeSyncAllDevices.exposed = True
 	
+	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	# Exposed call that allows the Firebase functions fulfilling Google Home status
+	# requests 
+	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	def googleHomeRequestStatus(self, devices):
+		# execute the GET against the plugin's web server now
+		conn = httplib.HTTPConnection("localhost", "9176")
+		conn.connect()
+		request = conn.putrequest("GET", "/AndroidClientHelper/googleHomeRequestStatus?devices=" + devices)
+		conn.endheaders()
+
+		responseToAction = conn.getresponse()
+		responseToActionText = responseToAction.read()
 	
+		return responseToActionText
+	googleHomeRequestStatus.exposed = True
+
 	#/////////////////////////////////////////////////////////////////////////////////////
 	# Utility Routines
 	#/////////////////////////////////////////////////////////////////////////////////////

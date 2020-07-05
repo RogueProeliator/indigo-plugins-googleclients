@@ -589,6 +589,21 @@ class Plugin(RPFramework.RPFrameworkPlugin.RPFrameworkPlugin):
 		# return the list of devices back to the calling routine; these are in the
 		# proper format for a return to Google
 		return publishedDevicesLst
+
+	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	# Returns a status update for all of the devices requested in the list of Device IDs
+	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	def getGoogleHomeDeviceStatus(self, deviceIds):
+		statusResponse = {}
+
+		# loop through the list of devices requested (by their ID) and return
+		# a dictionary of status updates
+		for deviceId in deviceIds:
+			device = indigo.devices[long(deviceId)]
+			if device is not None:
+				statusResponse[deviceId] = googleHomeDevices.buildGoogleHomeDeviceStatusUpdate(device)
+				
+		return statusResponse
 	
 		
 #/////////////////////////////////////////////////////////////////////////////////////////
@@ -722,6 +737,13 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
 					indigoPlugin = indigo.activePlugin
 					googleDevList = indigoPlugin.getGoogleHomeSyncResponse()
 					commandResponse = json.dumps(googleDevList)
+
+				elif commandName == u'googleHomeRequestStatus':
+					commandArguments = self.parseArguments(commandMatch.groupdict().get(u'arguments'))
+					indigoPlugin = indigo.activePlugin
+					deviceIds = commandArguments.get(u'devices')[0].split(',')
+					googleStatusUpdate = indigoPlugin.getGoogleHomeDeviceStatus(deviceIds)
+					commandResponse = json.dumps(googleStatusUpdate)
 		
 			# send whatever response was generated back to the caller
 			self.request.sendall(commandResponse)

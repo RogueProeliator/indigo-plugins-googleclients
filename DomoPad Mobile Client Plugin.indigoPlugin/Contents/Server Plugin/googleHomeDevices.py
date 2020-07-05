@@ -38,7 +38,7 @@ googleDeviceTypesDefn = {
     'action.devices.types.LIGHT': 
         {'Device': 'Light', 'DeviceType': 'action.devices.types.LIGHT',
             'Description': 'This type indicates that the device gets the light bulb icon and some light synonyms/aliases.',
-            'Traits': ['action.devices.traits.Brightness', 'action.devices.traits.ColorSetting', 'action.devices.traits.OnOff']},
+            'Traits': ['action.devices.traits.Brightness', 'action.devices.traits.OnOff']},
     'action.devices.types.LOCK': 
         {'Device': 'Lock', 'DeviceType': 'action.devices.types.LOCK',
             'Description': 'Locks can lock, unlock, and report a locked state. Unlocking is a security sensitive action which can require two-factor authentication.',
@@ -81,7 +81,6 @@ def mapIndigoDeviceToGoogleType(device):
     else:
         return ''
 
-
 #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 # Builds a Google Device sync definition for the given device utilizing the Global Props
 # defined by the user as well as the Indigo type
@@ -116,3 +115,38 @@ def buildGoogleHomeDeviceDefinition(device):
         }
     }
     return deviceDefnDict
+
+#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+# Builds the response for Google Assistant in the format required for updating the
+# Google Home Graph with the current status/state of the device provided
+#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+def buildGoogleHomeDeviceStatusUpdate(device):
+    # configuration information is found in the global properties collection
+    globalProps = device.sharedProps
+
+    # retrieve the device type for the Google Assistant device
+    googleDevType = globalProps.get('googleClientAsstType', '')
+    if googleDevType == '':
+        googleDevType = mapIndigoDeviceToGoogleType(device)
+
+    # the status returned depends on the traits that are defined for this
+    # device (dependent upon the device type)
+    deviceStatusTraits = {}
+    for trait in googleDeviceTypesDefn[googleDevType]['Traits']:
+        if trait == 'action.devices.traits.Brightness':
+            deviceStatusTraits['brightness'] = device.states.get('brightnessLevel', 0)
+        elif trait == 'action.devices.traits.ColorSetting':
+            # not yet implemented... could be added to Light type as an RGB state, such
+            # as for Hue lights
+            pass
+        elif trait == 'action.devices.traits.OnOff':
+            deviceStatusTraits['on'] = device.states.get('onOffState', False)
+
+    # the online status will simply be if the device is enabled; should we look at a status
+    # value?
+    deviceStatusTraits['online'] = device.configured and device.enabled and device.states.get('errorState', '') == ''
+    
+    # return the trait/state dictionary back... note that the device ID will need
+    # to be set as the key to this by the calling procedure
+    return deviceStatusTraits
+        
