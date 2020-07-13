@@ -605,6 +605,15 @@ class Plugin(RPFramework.RPFrameworkPlugin.RPFrameworkPlugin):
 				
 		return statusResponse
 	
+	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	# Processes an execution request from the Google Assistant, returning a status update
+	# for all devices (in conjunction with the command result); format for return is
+	# a JSON-ready object that may be directly returned to the Google Home Graph
+	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	def googleHomeExecuteRequest(self, command):
+		execResponse = googleHomeDevices.processExecuteRequest(command)
+		return execResponse
+
 		
 #/////////////////////////////////////////////////////////////////////////////////////////
 #/////////////////////////////////////////////////////////////////////////////////////////
@@ -669,6 +678,7 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
 							actionPropDict = eval(actionProps)
 							indigoPlugin.executeAction(actionId, deviceId=int(deviceId), props=actionPropDict)
 							commandResponse = u'OK'
+
 				elif commandName == u'registerAndroidDevice':
 					commandArguments = self.parseArguments(commandMatch.groupdict().get(u'arguments'))
 					deviceId = commandArguments.get(u'deviceId')[0]
@@ -687,6 +697,7 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
 					else:
 						indigo.server.log(u'Rejected device pairing - Indigo Device already paired to another Android device.', isError=True)
 						commandResponse = u'ERROR: Exception Processing Request'
+
 				elif commandName == u'unregisterAndroidDevice':	
 					commandArguments = self.parseArguments(commandMatch.groupdict().get(u'arguments'))
 					deviceId = commandArguments.get(u'deviceId')[0]
@@ -705,6 +716,7 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
 					else:
 						indigo.server.log(u'Rejected device un-pairing - Indigo Device does not match Android device.', isError=True)
 						commandResponse = u'ERROR: Exception Processing Request'
+
 				elif commandName == u'updateMobileDeviceStates':
 					commandArguments = self.parseArguments(commandMatch.groupdict().get(u'arguments'))
 					pairingId = commandArguments.get(u'pairingId')[0]
@@ -744,6 +756,14 @@ class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
 					deviceIds = commandArguments.get(u'devices')[0].split(',')
 					googleStatusUpdate = indigoPlugin.getGoogleHomeDeviceStatus(deviceIds)
 					commandResponse = json.dumps(googleStatusUpdate)
+
+				elif commandName == u'googleHomeExecuteRequest':
+					commandArguments = self.parseArguments(commandMatch.groupdict().get(u'arguments'))
+					indigoPlugin = indigo.activePlugin
+					indigo.server.log(u'Received command: ' + commandArguments.get(u'command')[0])
+					commands = json.loads(commandArguments.get(u'command')[0])
+					commandResults = indigoPlugin.googleHomeExecuteRequest(commands)
+					commandResponse = json.dumps(commandResults)
 		
 			# send whatever response was generated back to the caller
 			self.request.sendall(commandResponse)

@@ -399,6 +399,25 @@ class IndigoClientHelperHandler(BaseRequestHandler):
 		return responseToActionText
 	googleHomeRequestStatus.exposed = True
 
+	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	# Public execution request that originates from the Google Assistant (Firebase Cloud
+	# Functions). Requires the list of devices and list of commands to execute, both in
+	# JSON format
+	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	def googleHomeExecuteRequest(self, command):
+		# execute the GET against the plugin's web server now
+		conn = httplib.HTTPConnection("localhost", "9176")
+		conn.connect()
+		request = conn.putrequest("GET", "/AndroidClientHelper/googleHomeExecuteRequest?command=" + unicode(command))
+		conn.endheaders()
+
+		responseToAction = conn.getresponse()
+		responseToActionText = responseToAction.read()
+	
+		return responseToActionText
+	googleHomeExecuteRequest.exposed = True
+
+
 	#/////////////////////////////////////////////////////////////////////////////////////
 	# Utility Routines
 	#/////////////////////////////////////////////////////////////////////////////////////

@@ -16,6 +16,7 @@ import re
 import string
 import sys
 import threading
+import json
 
 import indigo
 import RPFramework
@@ -150,3 +151,77 @@ def buildGoogleHomeDeviceStatusUpdate(device):
     # to be set as the key to this by the calling procedure
     return deviceStatusTraits
         
+#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+# Processes the EXECUTE intent against the given device IDs; note that multiple
+# commands may be present. The return is the results of the action in the format
+# expected by the Google Assistant for this particular execute command
+#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+def processExecuteRequest(commandsList):
+    # the response object contains a list of devices that fall into each status; this will
+    # be a dictionary of status with a value being the list of devices
+    deviceStatusResults = {}
+
+    # there may be multiple commands to execute in the array
+    for commandDefn in commandsList:
+        # build the list of devices against which we must execute the
+        # command(s) provided
+        devicesList = []
+        for deviceId in commandDefn['devices']:
+            indigoDevice = indigo.devices[int(deviceId['id'])]
+            devicesList.append(indigoDevice)
+            if not indigoDevice.id in deviceStatusResults:
+                deviceStatusResults[indigoDevice.id] = ''
+
+        # loop through each device, executing the requested commands only if they are
+        # valid for the device type found
+        for device in devicesList:
+            # determine if the device is online and configured; otherwise it cannot accept the command
+            isDeviceOnline = device.configured and device.enabled and device.states.get('errorState', '') == ''
+
+            # execute the requested command, if available
+            if isDeviceOnline == False:
+                deviceStatusResults[device.id] = 'OFFLINE'
+            else:
+                for execCommand in commandDefn['execution']:
+                    commandId = execCommand['command']
+                    if commandId == 'action.devices.commands.OnOff':
+                        if execCommand['params']['on'] == True:
+                            indigo.device.turnOn(device.id)
+                        else:
+                            indigo.device.turnOff(device.id)
+                
+                # mark the execution as pending since the commands are generally asynchronous in
+                # nature... the statuses will be updated when the device changes
+                if deviceStatusResults[device.id] == '':
+                    deviceStatusResults[device.id] = 'PENDING'
+    
+    # formulate the return... this is an arry with a new result dictionary for each
+    # status within the devices results
+    commandReturn = []
+    successDevices = {'ids': [], 'status': 'SUCCESS' }
+    pendingDevices = {'ids': [], 'status': 'PENDING' }
+    errorDevices = {'ids': [], 'status': 'ERROR' }
+    offlineDevices = {'ids': [], 'status': 'OFFLINE' }
+
+    # add each device result to the appropriate list
+    for deviceId, result in deviceStatusResults.items():
+        if result == 'SUCCESS':
+            successDevices['ids'].append(str(deviceId))
+        elif result == 'PENDING':
+            pendingDevices['ids'].append(str(deviceId))
+        elif result == 'ERROR':
+            errorDevices['ids'].append(str(deviceId))
+        elif result == 'offlineDevices':
+            offlineDevices['ids'].append(str(deviceId))
+
+    # build the composite results array
+    if len(successDevices['ids']) > 0:
+        commandReturn.append(successDevices)
+    if len(pendingDevices['ids']) > 0:
+        commandReturn.append(pendingDevices)
+    if len(errorDevices['ids']) > 0:
+        commandReturn.append(errorDevices)
+    if len(offlineDevices['ids']) > 0:
+        commandReturn.append(offlineDevices)
+    
+    return commandReturn
