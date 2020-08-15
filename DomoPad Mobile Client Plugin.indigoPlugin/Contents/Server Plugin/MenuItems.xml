@@ -18,6 +18,13 @@
 				<Label>PUBLISHED DEVICES</Label>
 			</Field>
 			<Field id="simpleSeparator1" type="separator" />
+			<Field id="sendUpdatesToGoogleInstrLabel" type="label" fontSize="small">
+				<Label>If you want Google Home/Assistant to accurately reflect your current device status, send the updates to Google by checking below. Device control will work fine without sending updates, but the display within the Home app may not always be accurate.</Label>
+			</Field>
+			<Field id="sendUpdatesToGoogle" type="checkbox">
+				<Label>Send Device Updates:</Label>
+				<CallbackMethod>sendUpdatesToGoogleChanged</CallbackMethod>
+			</Field>
 			<Field id="publishedDevicesInstrLabel" type="label" fontSize="small">
 				<Label>Only the devices specified below will be visible to Google Home / Assistant. Select a device to edit or click Add to publish additional devices to Google Home.</Label>
 			</Field>

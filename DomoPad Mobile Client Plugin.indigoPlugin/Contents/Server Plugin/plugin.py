@@ -31,6 +31,7 @@ import threading
 import urllib
 import urllib2
 import inspect
+import requests
 
 import RPFramework
 import domoPadDevices
@@ -45,6 +46,8 @@ DOMOPADCOMMAND_SENDNOTIFICATION = u'SendNotification'
 DOMOPADCOMMAND_SPEAKANNOUNCEMENTNOTIFICATION = u'SendTextToSpeechNotification'
 DOMOPADCOMMAND_CPDISPLAYNOTIFICATION = u'SendCPDisplayRequest'
 DOMOPADCOMMAND_DEVICEUPDATEREQUESTNOTIFICATION = u'RequestDeviceStatusUpdate'
+
+GOOGLEHOME_SENDDEVICEUPDATE = "SendHomeGraphUpdate"
 
 
 #/////////////////////////////////////////////////////////////////////////////////////////
@@ -66,6 +69,10 @@ class Plugin(RPFramework.RPFrameworkPlugin.RPFrameworkPlugin):
 	def __init__(self, pluginId, pluginDisplayName, pluginVersion, pluginPrefs):
 		# RP framework base class's init method
 		super(Plugin, self).__init__(pluginId, pluginDisplayName, pluginVersion, pluginPrefs, managedDeviceClassModule=domoPadDevices)
+
+		# initialize the member variable that tracks whether or not we are reporting device
+		# states back to Google Home
+		self.reportStateToAssistant = pluginPrefs.get("sendUpdatesToGoogle", False)
 		
 		
 	#/////////////////////////////////////////////////////////////////////////////////////
@@ -81,6 +88,10 @@ class Plugin(RPFramework.RPFrameworkPlugin.RPFrameworkPlugin):
 		# check the IWS plugin currently installed and see if we need to install or upgrade
 		# to the version included with this plugin
 		self.processIWSUpdateCheck()
+
+		# subscribe to all devices changes so that we may push them up to Google Home
+		# (if so configured)
+		indigo.devices.subscribeToChanges()
 			
 		# create the socket listener server that will listen for incoming commands to
 		# be sent to the Plugin
@@ -95,6 +106,10 @@ class Plugin(RPFramework.RPFrameworkPlugin.RPFrameworkPlugin):
 			self.socketServerThread.start()
 		except:
 			self.exceptionLog()
+
+		# tell the Indigo server that we want to be notificed of all device
+		# updates (so we can push to Google)
+		indigo.devices.subscribeToChanges()
 			
 	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	# When the plugin is shutting down we must take down the socket server so that the
@@ -322,6 +337,48 @@ class Plugin(RPFramework.RPFrameworkPlugin.RPFrameworkPlugin):
 	def processRequestDeviceStatusNotification(self, action):
 		requestDeviceStatusNotification(action.deviceId)
 		
+
+	#/////////////////////////////////////////////////////////////////////////////////////	
+	# Plugin Event Overrides
+	#/////////////////////////////////////////////////////////////////////////////////////	
+	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	# Called whenever a device updates... if it is one of the monitored devices then
+	# send the updates to Google Home
+	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	def deviceUpdated(self, origDev, newDev):
+		self.logger.info(u'Received device update for ' + newDev.name)
+
+		# call the base's implementation first just to make sure all the right things happen elsewhere
+		indigo.PluginBase.deviceUpdated(self, origDev, newDev)
+
+		# we only care about devices which are published to Google Home and only whenever
+		# the option to send devices changes is checked
+		if self.reportStateToAssistant == True:
+			if newDev.globalProps.get(u'googleClientPublishHome', False) == True:
+				try:
+					# call the Google Home Graph's update via the Firebase Function
+					self.logger.info('Scheduling update to Google for: ' + newDev.name)
+					updatePayload = {}
+					updatePayload["devices"] = {}
+					updatePayload["devices"]["states"] = {}
+					updatePayload["devices"]["states"][newDev.id] = googleHomeDevices.buildGoogleHomeDeviceStatusUpdate(newDev)
+					self.pluginCommandQueue.put(RPFrameworkCommand.RPFrameworkCommand(RPFrameworkCommand.GOOGLEHOME_SENDDEVICEUPDATE, commandPayload=updatePayload))
+				except:
+					self.logger.error(u'Failed to generate Google Home update for device ' + unicode(newDev.name))
+	
+	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	# This routine will be called to handle any unknown commands at the plugin level; it
+	# cmust handle the Google Home asynchronous communication
+	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	def handleUnknownPluginCommand(self, rpCommand, reQueueCommandsList):
+		if rpCommand.commandName == GOOGLEHOME_SENDDEVICEUPDATE:
+			try:
+				self.logger.info('Sending device update...')
+				deviceUpdatePayload = command.commandPayload
+				requests.post(u'https://us-central1-domotics-pad-indigo-client.cloudfunctions.net/reportDeviceState', deviceUpdatePayload)
+			except:
+				self.logger.error(u'Failed to send device update to Google Home')
+				
 			
 	#/////////////////////////////////////////////////////////////////////////////////////
 	# Configuration Dialog Callback Routines
@@ -446,6 +503,21 @@ class Plugin(RPFramework.RPFrameworkPlugin.RPFrameworkPlugin):
 		valuesDict[u'action2Group'] = u''
 		return valuesDict
 	
+	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	# Called whenever the user has checked or un-checked the option to send the device
+	# updates to Google Home
+	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	def sendUpdatesToGoogleChanged(self, valuesDict=None, typeId="", devId=0):
+		# replace the value within the plugin properties
+		self.pluginPrefs["sendUpdatesToGoogle"] = valuesDict["sendUpdatesToGoogle"]
+		self.savePluginPrefs()
+
+		# change the value of the member variable that is used in the subscribeToChanges
+		# event as a trigger
+		self.reportStateToAssistant = valuesDict["sendUpdatesToGoogle"]
+		self.logger.info(u'Sending updates to Google: ' + unicode(self.reportStateToAssistant))
+
+
 	
 	#/////////////////////////////////////////////////////////////////////////////////////
 	# Utility Routines

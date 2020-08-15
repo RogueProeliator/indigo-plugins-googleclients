@@ -11,6 +11,7 @@
 		<guiConfiguration>
 			<remoteCommandPort>9176</remoteCommandPort>
 			<pluginCommandQueueIdleSleep>3</pluginCommandQueueIdleSleep>
+			<pluginCommandQueueIdleSleep>0.5</pluginCommandQueueIdleSleep>
 		</guiConfiguration>
 		<deviceMapping>
 			<device indigoId="domoPadAndroidClient" className="DomoPadAndroidClient" />
