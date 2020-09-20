@@ -354,17 +354,17 @@ class Plugin(RPFramework.RPFrameworkPlugin.RPFrameworkPlugin):
 		# we only care about devices which are published to Google Home and only whenever
 		# the option to send devices changes is checked
 		if self.reportStateToAssistant == True:
-			if newDev.globalProps.get(u'googleClientPublishHome', False) == True:
+			globalPropsDict = newDev.globalProps['com.indigodomo.indigoserver']
+			if globalPropsDict.get(u'googleClientPublishHome', False) == True:
 				try:
 					# call the Google Home Graph's update via the Firebase Function
-					self.logger.info('Scheduling update to Google for: ' + newDev.name)
 					updatePayload = {}
 					updatePayload["devices"] = {}
 					updatePayload["devices"]["states"] = {}
-					updatePayload["devices"]["states"][newDev.id] = googleHomeDevices.buildGoogleHomeDeviceStatusUpdate(newDev)
-					self.pluginCommandQueue.put(RPFrameworkCommand.RPFrameworkCommand(RPFrameworkCommand.GOOGLEHOME_SENDDEVICEUPDATE, commandPayload=updatePayload))
+					updatePayload["devices"]["states"][unicode(newDev.id)] = googleHomeDevices.buildGoogleHomeDeviceStatusUpdate(newDev)
+					self.pluginCommandQueue.put(RPFramework.RPFrameworkCommand.RPFrameworkCommand(GOOGLEHOME_SENDDEVICEUPDATE, commandPayload=updatePayload))
 				except:
-					self.logger.error(u'Failed to generate Google Home update for device ' + unicode(newDev.name))
+					self.logger.exception(u'Failed to generate Google Home update for device ' + unicode(newDev.name))
 	
 	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	# This routine will be called to handle any unknown commands at the plugin level; it
@@ -374,10 +374,11 @@ class Plugin(RPFramework.RPFrameworkPlugin.RPFrameworkPlugin):
 		if rpCommand.commandName == GOOGLEHOME_SENDDEVICEUPDATE:
 			try:
 				self.logger.info('Sending device update...')
-				deviceUpdatePayload = command.commandPayload
-				requests.post(u'https://us-central1-domotics-pad-indigo-client.cloudfunctions.net/reportDeviceState', deviceUpdatePayload)
+				self.logger.info(str(rpCommand.commandPayload))
+				deviceUpdatePayload = rpCommand.commandPayload
+				requests.post(u'https://us-central1-domotics-pad-indigo-client.cloudfunctions.net/reportDeviceState', json=deviceUpdatePayload)
 			except:
-				self.logger.error(u'Failed to send device update to Google Home')
+				self.logger.exception(u'Failed to send device update to Google Home')
 				
 			
 	#/////////////////////////////////////////////////////////////////////////////////////
