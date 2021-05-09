@@ -1,4 +1,5 @@
 # Introduction
-The Domotics Pad Android Client is able to talk to Indigo using several different techniques, depending upon the operation. However, sometimes Domotics Pad needs to do something that is beyond the scope of the "normal" Indigo communication. In these instances, Domotics Pad relies on an Indigo Plugin to extend Indigo's functionality. Domotics Pad will run without completing these steps, but with reduced functionality.
+The Domotics Pad Clients Plugin enables advanced control of Indigo via various Domotics Pad clients, such as from Android or iOS devices and
+Google Home / Assistant enabled devices (Nest Homes, Nest Hubs, etc.)
 
 [Full Documentation](https://github.com/RogueProeliator/DomoPad-Plugin/wiki) | [GitHub Repo](https://github.com/RogueProeliator/DomoPad-Plugin) | [Help Forum](https://forums.indigodomo.com/viewforum.php?f=73&sid=b6fc9a839f028ecda2f10b2b0ef62406)
