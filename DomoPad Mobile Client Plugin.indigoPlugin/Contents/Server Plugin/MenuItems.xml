@@ -6,7 +6,7 @@
 			<Field id="configGHomeSubTitleLabel" type="label" fontSize="medium">
 				<Label>Select the device you wish to publish to Google Home/Assistant or whose definition that you want to modify.</Label>
 			</Field>
-			<Field id="publishedDevice" type="menu">
+			<Field id="publishedDevice" type="menu" dynamicReload="true">
 				<Label>Device:</Label>
 				<List class="self" method="getGoogleHomeDeviceList" />
 				<CallbackMethod>publishedHomeDeviceSelected</CallbackMethod>
@@ -44,6 +44,10 @@
 				<Label>NOTE: changes are not saved if you switch devices or close this dialog without saving first.</Label>
 			</Field>
 		</ConfigUI>
+	</MenuItem>
+	<MenuItem id="requestResync">
+		<Name>Re-Synchronize Devices with Google</Name>
+		<CallbackMethod>requestResyncWithGoogle</CallbackMethod>
 	</MenuItem>
 
 	<MenuItem id="debugSectionSeparator" />

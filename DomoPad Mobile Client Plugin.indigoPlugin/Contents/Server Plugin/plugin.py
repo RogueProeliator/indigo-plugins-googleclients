@@ -42,6 +42,8 @@ DOMOPADCOMMAND_DEVICEUPDATEREQUESTNOTIFICATION = u'RequestDeviceStatusUpdate'
 GOOGLEHOME_SENDDEVICEUPDATE = u'SendHomeGraphUpdate'
 GOOGLEHOME_REQUESTSYNC      = u'RequestHomeGraphSync'
 
+INDIGO_SERVER_CLOUD_URL     = u'https://us-central1-domotics-pad-indigo-client.cloudfunctions.net/indigo-server-portal'
+
 
 #/////////////////////////////////////////////////////////////////////////////////////////
 #/////////////////////////////////////////////////////////////////////////////////////////
@@ -98,7 +100,11 @@ class Plugin(RPFramework.RPFrameworkPlugin.RPFrameworkPlugin):
 				self.logger.exception(u'Failed to send device update to Google Home')
 
 		elif rpCommand.commandName == GOOGLEHOME_REQUESTSYNC:
-			pass
+			try:
+				requestBody = '{ "intent": "googlehomegraph.REQUEST_SYNC", "payload": { "agentId": "1234" } }'
+				requests.post(INDIGO_SERVER_CLOUD_URL, data=requestBody)
+			except Exception:
+				self.logger.exception(u'Failed to request that device definitions re-synchronize with Google Home/Assistant')
 			
 
 	#/////////////////////////////////////////////////////////////////////////////////////	
@@ -207,7 +213,7 @@ class Plugin(RPFramework.RPFrameworkPlugin.RPFrameworkPlugin):
 			valuesDict["enableDeviceDetailUI"]       = False
 
 			# let Google know that a synchronization is required
-			self.pluginCommandQueue.put(RPFramework.RPFrameworkCommand.RPFrameworkCommand(GOOGLEHOME_REQUESTSYNC))
+			
 		except:
 			self.logger.exception(u'Failed to update published device properties')
 		return valuesDict
@@ -216,3 +222,12 @@ class Plugin(RPFramework.RPFrameworkPlugin.RPFrameworkPlugin):
 	#/////////////////////////////////////////////////////////////////////////////////////
 	# Utility Routines
 	#/////////////////////////////////////////////////////////////////////////////////////		
+	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	# Processes the user requesting that the Google Home Graph re-sync the set of
+	# published devices
+	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	def requestResyncWithGoogle(self):
+		# simply schedule a resynchronization request with the background processor
+		self.logger.info(u'Scheduling re-synchronization request with Google Home/Assistant')
+		self.pluginCommandQueue.put(RPFramework.RPFrameworkCommand.RPFrameworkCommand(GOOGLEHOME_REQUESTSYNC))
+	
