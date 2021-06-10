@@ -13,16 +13,13 @@
 #/////////////////////////////////////////////////////////////////////////////////////////
 import cgi
 from   distutils.dir_util import copy_tree
-import httplib
 import os
 import re
 import simplejson as json
 import socket
-import SocketServer
 import string
 import threading
 import urllib
-import urllib2
 import inspect
 import requests
 
@@ -101,7 +98,8 @@ class Plugin(RPFramework.RPFrameworkPlugin.RPFrameworkPlugin):
 
 		elif rpCommand.commandName == GOOGLEHOME_REQUESTSYNC:
 			try:
-				requestBody = '{ "intent": "googlehomegraph.REQUEST_SYNC", "payload": { "agentId": "1234" } }'
+				reflectorUrl = indigo.server.getReflectorURL()
+				requestBody = '{ "intent": "googlehomegraph.REQUEST_SYNC", "payload": { "agentId": "%s" } }'.format(reflectorUrl)
 				requests.post(INDIGO_SERVER_CLOUD_URL, data=requestBody)
 			except Exception:
 				self.logger.exception(u'Failed to request that device definitions re-synchronize with Google Home/Assistant')
@@ -144,12 +142,10 @@ class Plugin(RPFramework.RPFrameworkPlugin.RPFrameworkPlugin):
 		availableHomeDevices = []
 
 		for dev in indigo.devices:
-			googleDeviceType = googleHomeDevices.mapIndigoDeviceToGoogleType(dev)
-			if googleDeviceType != '':
-				if dev.sharedProps.get(u'googleClientPublishHome', False):
-					publishedHomeDevices.append((dev.id, dev.name))
-				else:
-					availableHomeDevices.append((dev.id, dev.name))
+			if dev.sharedProps.get(u'googleClientPublishHome', False):
+				publishedHomeDevices.append((dev.id, dev.name))
+			else:
+				availableHomeDevices.append((dev.id, dev.name))
 
 		# build the complete list of devices
 		returnList = []
@@ -166,11 +162,14 @@ class Plugin(RPFramework.RPFrameworkPlugin.RPFrameworkPlugin):
 	# Google Assistant
 	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	def getGoogleDeviceTypes(self, filter="", valuesDict=None, typeId="", targetId=0):
-		listItems = []
-		for deviceType in sorted(googleHomeDevices.googleDeviceTypesDefn.iterkeys()):
-			deviceDefn = googleHomeDevices.googleDeviceTypesDefn[deviceType]
-			listItems.append((deviceType, deviceDefn['Device']))
-		return listItems
+		if valuesDict is None:
+			return []
+			
+		device = indigo.devices.get(int(valuesDict.get(u"publishedDevice", 0)), None)
+		if device is None:
+			return []
+		else:
+			return googleHomeDevices.getAvailableSubtypesForDevice(device)
 
 	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	# Called whenever the user has selected a device from the list of published Google
@@ -217,6 +216,36 @@ class Plugin(RPFramework.RPFrameworkPlugin.RPFrameworkPlugin):
 		except:
 			self.logger.exception(u'Failed to update published device properties')
 		return valuesDict
+
+
+	#/////////////////////////////////////////////////////////////////////////////////////
+	# API Action Handlers
+	#/////////////////////////////////////////////////////////////////////////////////////
+	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	# Sets the Setpoint of a thermostat using the current thermostat mode (heating or
+	# cooling)
+	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	def apiSetThermostatSetpoint(self, action, dev=None, callerWaitingForResult=None):
+		deviceId    = int(action.props.get(u'deviceId', '0'))
+		newSetpoint = float(action.props.get(u'setpoint', '0.0'))
+		isSuccess   = False
+		message     = u''
+
+		if deviceId == 0 or newSetpoint == 0.0:
+			self.logger.warning(u'Unable to process API request to set thermostat setpoint due to missing or invalid arguments')
+			message = u'Unable to process API request to set thermostat setpoint due to missing or invalid arguments'
+		else:
+			device = indigo.devices[deviceId]
+			if device.hvacOperationModeIsAuto or device.hvacOperationModeIsProgramAuto or device.hvacOperationModeIsCool or device.hvacOperationModeIsProgramCool:
+				device.setpointCool = newSetpoint
+				isSuccess = True
+			elif device.hvacOperationModeIsHeat or device.hvacOperationModeIsProgramHeat:
+				device.setpointHeat = newSetpoint
+				isSuccess = True
+			else:
+				message = u'Thermostat is off or not in a mode that accepts setpoint changes'
+		
+		return '{{ "result": "{0}", "message": "{1}" }}'.format(isSuccess, message)
 
 	
 	#/////////////////////////////////////////////////////////////////////////////////////

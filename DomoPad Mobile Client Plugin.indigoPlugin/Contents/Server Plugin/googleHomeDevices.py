@@ -19,7 +19,6 @@ import threading
 import json
 
 import indigo
-import RPFramework
 
 #/////////////////////////////////////////////////////////////////////////////////////////
 # GoogleDeviceTypesDefinition
@@ -66,18 +65,141 @@ googleDeviceTypesDefn = {
             'Traits': ['action.devices.traits.LockUnlock', 'action.devices.traits.OpenClose']}
 }
 
+SUPPORTED_INDIGO_CLASSES = {
+    indigo.DimmerDevice      : indigo.kDimmerDeviceSubType,
+    indigo.SensorDevice      : indigo.kSensorDeviceSubType,
+    indigo.RelayDevice       : indigo.kRelayDeviceSubType,
+    indigo.SpeedControlDevice: None,
+    indigo.ThermostatDevice  : None,
+}
+
 #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 # Maps an Indigo device (object) to the proper/default Google Assistant device type
 # that may be found in the types dictionary
 #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-def mapIndigoDeviceToGoogleType(device):
-    if isinstance(device, indigo.DimmerDevice):
-        return 'action.devices.types.LIGHT'
-    elif isinstance(device, indigo.RelayDevice):
-        return 'action.devices.types.SWITCH'
-    elif isinstance(device, indigo.ThermostatDevice):
-        return 'action.devices.types.THERMOSTAT'
-    elif isinstance(device, indigo.SensorDevice):
-        return 'action.devices.types.SENSOR'
-    else:
-        return ''
+def getAvailableSubtypesForDevice(device):
+    try:
+        subtype_meta = SUPPORTED_INDIGO_CLASSES[device.__class__]
+        subtypes = [getattr(subtype_meta, a) for a in dir(subtype_meta) if not a.startswith('__')]
+        subtype_list = [(v, v) for v in subtypes]
+
+        subtype_list.sort(key=lambda x: x[1])
+        return subtype_list
+    except TypeError:
+        return []
+    except:
+        return [("invalid", "invalid device type")]
+
+#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+# Determines the sub type of a device based upon a specified sub type, a device
+# property or hints based upon device properties
+#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+def getDeviceSubType(device):
+    if device.__class__ not in SUPPORTED_INDIGO_CLASSES or SUPPORTED_INDIGO_CLASSES[device.__class__] is None:
+        return None
+
+    # At some point, we might want to allow the device owner to give us a hint about it's subType, though once we
+    # actually implement the subType property on a device that might be enough. So, TBD - we won't document this
+    # yet.
+    override_subtype = device.sharedProps.get(u"googleClientAsstType", None)
+    if device.pluginProps.get("sub-type"): override_subtype = device.pluginProps.get("sub-type")
+    sub_type = override_subtype if override_subtype else device.subType
+
+    if sub_type == "Light":
+        # The Insteon FanLinc light has type "Light". Others may as well, we're going to assume they are dimmers.
+        sub_type = indigo.kDimmerDeviceSubType.Dimmer
+    elif sub_type == "Strobe":
+        # The Fortrezz siren/strobe device has "Strobe" for subtype, so we're going to map that to a standard relay device.
+        sub_type = indigo.kRelayDeviceSubType.Switch
+    elif sub_type == "Motion Sensor":
+        sub_type = indigo.kSensorDeviceSubType.Motion
+    elif sub_type == "Door Sensor":
+        sub_type = indigo.kSensorDeviceSubType.DoorWindow
+    elif sub_type == "Tilt Sensor":
+        sub_type = indigo.kSensorDeviceSubType.DoorWindow
+    if not sub_type:
+        # So, no subtype was specified either through an override property or by the device's subType property. We
+        # will use some extra logic to attempt to sus out the subtype.
+        if type(device) == indigo.DimmerDevice:
+            # So dimmer devices can be used for a variety of things: fans, shades/blinds, etc. They can also support
+            # color settings or be a plug in (wall wart).
+            if "plug" in device.model.lower():
+                # This will normally mean that it's a plug-in device.
+                sub_type = indigo.kDimmerDeviceSubType.PlugIn
+            elif "blind" in device.name.lower() or "shade" in device.name.lower():
+                # This one is harder to detect, but if they have the word blind or shade in the device name, we can
+                # assume that it's a blind
+                sub_type = indigo.kDimmerDeviceSubType.Blind
+            elif "fan" in device.name.lower() or "fan" in device.model.lower():
+                # Similar to blinds and shades, if fan is in the name it's likely a fan.
+                sub_type = indigo.kDimmerDeviceSubType.Fan
+            elif "bulb" in device.name.lower() or "bulb" in device.model.lower():
+                if device.supportsColor:
+                    # Color dimmer
+                    sub_type = indigo.kDimmerDeviceSubType.ColorBulb
+                else:
+                    sub_type = indigo.kDimmerDeviceSubType.Bulb
+            elif "valve" in device.name.lower() or "valve" in device.model.lower():
+                # Similar to blinds and shades, if fan is in the name it's likely a fan.
+                sub_type = indigo.kDimmerDeviceSubType.Valve
+            else:
+                if device.supportsColor:
+                    # Color dimmer
+                    sub_type = indigo.kDimmerDeviceSubType.ColorDimmer
+                else:
+                    # Everything else will just be a dimmer
+                    sub_type = indigo.kDimmerDeviceSubType.Dimmer
+        elif type(device) == indigo.RelayDevice:
+            if "plug" in device.model.lower() or "plug" in device.name.lower() or "module" in device.model.lower():
+                # This will normally mean that it's a plug-in device.
+                sub_type = indigo.kRelayDeviceSubType.PlugIn
+            elif "lock" in device.model.lower() or "lock" in device.name.lower() or device.ownerProps.get("isLockSubType", False):
+                # Look specifically to see if this is Joe's MyQ device, which is actually a GarageController
+                if device.pluginId == "com.flyingdiver.indigoplugin.myq" and device.deviceTypeId == "myqOpener":
+                    sub_type = indigo.kRelayDeviceSubType.GarageController
+                else:
+                    sub_type = indigo.kRelayDeviceSubType.Lock
+            elif "siren" in device.model.lower() or "siren" in device.name.lower():
+                sub_type = indigo.kRelayDeviceSubType.Siren
+            elif "strobe" in device.model.lower() or "strobe" in device.name.lower():
+                sub_type = indigo.kRelayDeviceSubType.Siren
+            elif "garage" in device.model.lower() or "garage" in device.name.lower():
+                sub_type = indigo.kRelayDeviceSubType.GarageController
+            elif "outlet" in device.model.lower() or "outlet" in device.name.lower():
+                sub_type = indigo.kRelayDeviceSubType.GarageController
+            else:
+                sub_type = indigo.kRelayDeviceSubType.Switch
+        elif type(device) == indigo.SensorDevice:
+            if "door" in device.model.lower() or "window" in device.model.lower() or "open" in device.model.lower():
+                sub_type = indigo.kSensorDeviceSubType.DoorWindow
+            if "door" in device.name.lower() or "window" in device.name.lower():
+                sub_type = indigo.kSensorDeviceSubType.DoorWindow
+            elif "motion" in device.model.lower():
+                sub_type = indigo.kSensorDeviceSubType.Motion
+            elif "smoke" in device.model.lower():
+                sub_type = indigo.kSensorDeviceSubType.Smoke
+            elif "co2" in device.model.lower() or "carbon" in device.model.lower():
+                sub_type = indigo.kSensorDeviceSubType.CO
+            elif "tamper" in device.model.lower():
+                sub_type = indigo.kSensorDeviceSubType.Tamper
+            elif "uv" in device.model.lower() or "ultraviolet" in device.model.lower():
+                sub_type = indigo.kSensorDeviceSubType.CO
+            elif "illuminance" in device.model.lower() or "illuminance" in device.model.lower():
+                sub_type = indigo.kSensorDeviceSubType.Illuminance
+            elif "vibration" in device.model.lower():
+                sub_type = indigo.kSensorDeviceSubType.Vibration
+            elif "glass" in device.model.lower():
+                sub_type = indigo.kSensorDeviceSubType.GlassBreak
+            elif "gas" in device.model.lower():
+                sub_type = indigo.kSensorDeviceSubType.GasLeak
+            elif "pressure" in device.model.lower():
+                sub_type = indigo.kSensorDeviceSubType.Pressure
+            elif "water" in device.model.lower():
+                sub_type = indigo.kSensorDeviceSubType.WaterLeak
+            elif "vibration" in device.model.lower():
+                sub_type = indigo.kSensorDeviceSubType.Vibration
+            elif "voltage" in device.model.lower():
+                sub_type = indigo.kSensorDeviceSubType.Voltage
+            else:
+                sub_type = indigo.kSensorDeviceSubType.Binary
+    return sub_type

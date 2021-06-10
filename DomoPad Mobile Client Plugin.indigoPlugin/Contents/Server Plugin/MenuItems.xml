@@ -18,8 +18,8 @@
 				<Description>Make this device available to Google Home/Assistant.</Description>
 			</Field>
 			<Field id="deviceDetailsPublishedType" type="menu" enabledBindingId="enableDeviceDetailUI">
-				<Label>Type:</Label>
-				<List class="self" method="getGoogleDeviceTypes" />
+				<Label>Sub Type:</Label>
+				<List class="self" method="getGoogleDeviceTypes" dynamicReload="true" />
 			</Field>
 			<Field id="deviceTypeInstructions" type="label" fontSize="small" alignWithControl="True">
 				<Label>We've selected the subtype that we believe is the most appropriate for your device. However, you can change that here. This will determine how you control it via the Assistant and how it appears in the Google Home app.</Label>
