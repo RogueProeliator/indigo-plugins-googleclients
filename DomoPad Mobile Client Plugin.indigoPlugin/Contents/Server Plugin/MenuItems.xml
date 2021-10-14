@@ -18,7 +18,7 @@
 				<Description>Make this device available to Google Home/Assistant.</Description>
 			</Field>
 			<Field id="deviceDetailsPublishedType" type="menu" enabledBindingId="enableDeviceDetailUI">
-				<Label>Sub Type:</Label>
+				<Label>Type:</Label>
 				<List class="self" method="getGoogleDeviceTypes" dynamicReload="true" />
 			</Field>
 			<Field id="deviceTypeInstructions" type="label" fontSize="small" alignWithControl="True">
@@ -35,6 +35,12 @@
 			</Field>
 			<Field id="sendUpdatesToGoogleInstr" type="label" fontSize="small" alignWithControl="True">
 				<Label>If enabled, the local state (such as on/off status) of devices will be reflected in Google Home; this speeds up the display on screen such as the Nest Hub.</Label>
+			</Field>
+			<Field id="deviceDetailsPINCode" type="textfield"  enabledBindingId="enableDeviceDetailUI">
+				<Label>PIN</Label>
+			</Field>
+			<Field id="pinCodeInstr" type="label" fontSize="small" alignWithControl="True">
+				<Label>If entered, this PIN code will be required for the Google Assistant to execute an action against the device. Only numbers are supported.</Label>
 			</Field>
 			<Field id="deviceDetailsSaveChanges" type="button" enabledBindingId="enableDeviceDetailUI">
 				<Title>Save</Title>
