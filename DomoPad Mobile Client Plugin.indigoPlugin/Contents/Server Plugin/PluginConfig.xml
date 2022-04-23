@@ -7,7 +7,7 @@
         <Label>Developed by RogueProeliator</Label>
     </Field>
 	<Field id="pluginDescriptionLabel" type="label" fontSize="small" fontColor="darkGray">
-        <Label>Provides advanced interactions when used with the Domotics Pad Android Client and allows control of Indigo-connected devices via Google Home / Assistant.</Label>
+        <Label>Provides advanced interactions when used with the Domotics Pad Android Client</Label>
     </Field>
 	
 	<Field type="label" id="debugSpacer" fontSize="small">

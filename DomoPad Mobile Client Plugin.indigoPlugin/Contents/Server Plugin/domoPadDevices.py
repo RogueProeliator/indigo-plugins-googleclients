@@ -38,16 +38,16 @@ class DomoPadAndroidClient(RPFramework.RPFrameworkNonCommChildDevice.RPFramework
 	# member variables
 	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	def __init__(self, plugin, device):
-		super(DomoPadAndroidClient, self).__init__(plugin, device)
+		super().__init__(plugin, device)
 		
-		self.upgradedDeviceProperties.append((u'SupportsBatteryLevel', True))
+		self.upgradedDeviceProperties.append(("SupportsBatteryLevel", True))
 		
-		self.upgradedDeviceStates.append(u'modelName')
-		self.upgradedDeviceStates.append(u'batteryStatus')
-		self.upgradedDeviceStates.append(u'batteryLevel')
-		self.upgradedDeviceStates.append(u'longitude')
-		self.upgradedDeviceStates.append(u'latitude')
-		self.upgradedDeviceStates.append(u'locationFixTime')
+		self.upgradedDeviceStates.append("modelName")
+		self.upgradedDeviceStates.append("batteryStatus")
+		self.upgradedDeviceStates.append("batteryLevel")
+		self.upgradedDeviceStates.append("longitude")
+		self.upgradedDeviceStates.append("latitude")
+		self.upgradedDeviceStates.append("locationFixTime")
 	
 	
 	#/////////////////////////////////////////////////////////////////////////////////////

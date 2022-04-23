@@ -1,11 +1,14 @@
 Domotics Pad Mobile Client Indigo Plugin
-https://github.com/RogueProeliator/DomoPad-Plugin
+https://github.com/RogueProeliator/android-plugins-domoticspad
 
-To update to the latest version of the application, please download the latest release available at https://github.com/RogueProeliator/DomoPad-Plugin/releases or via the Check For Updates menu option if you already have a version installed.
+To update to the latest version of the application, please download the latest release available at https://github.com/RogueProeliator/android-plugins-domoticspad/releases or via the Check For Updates menu option if you already have a version installed.
 
 =================================
 VERSION HISTORY
 =================================
+Version 2.3.0 [April 2022]:
+* Updated code to Python 3 plugin format
+
 Version 2.2.6 [June 2019]:
 * Bug Fix - Allows unicode characters in speak announcement notifications
 * Adds ability to perform standard substitutions on speak announcement notifications
