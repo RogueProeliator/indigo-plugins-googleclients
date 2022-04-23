@@ -9,18 +9,9 @@
 #/////////////////////////////////////////////////////////////////////////////////////////
 
 #/////////////////////////////////////////////////////////////////////////////////////////
-# Python imports
-#/////////////////////////////////////////////////////////////////////////////////////////
-import cgi
+#region Python imports
 from   distutils.dir_util import copy_tree
-import os
-import re
 import simplejson as json
-import socket
-import string
-import threading
-import urllib
-import inspect
 import requests
 
 import RPFramework
@@ -28,10 +19,11 @@ import domoPadDevices
 import googleHomeDevices
 import dicttoxml
 
+#endregion
+#/////////////////////////////////////////////////////////////////////////////////////////
 
 #/////////////////////////////////////////////////////////////////////////////////////////
-# Constants and configuration variables
-#/////////////////////////////////////////////////////////////////////////////////////////
+#region Constants and configuration variables
 DOMOPADCOMMAND_SENDNOTIFICATION                = u'SendNotification'
 DOMOPADCOMMAND_SPEAKANNOUNCEMENTNOTIFICATION   = u'SendTextToSpeechNotification'
 DOMOPADCOMMAND_CPDISPLAYNOTIFICATION           = u'SendCPDisplayRequest'
@@ -41,6 +33,9 @@ GOOGLEHOME_SENDDEVICEUPDATE = u'SendHomeGraphUpdate'
 GOOGLEHOME_REQUESTSYNC      = u'RequestHomeGraphSync'
 
 INDIGO_SERVER_CLOUD_URL     = u'https://us-central1-domotics-pad-indigo-client.cloudfunctions.net/indigo-server-portal'
+
+#endregion
+#/////////////////////////////////////////////////////////////////////////////////////////
 
 
 #/////////////////////////////////////////////////////////////////////////////////////////
@@ -139,7 +134,7 @@ class Plugin(RPFramework.RPFrameworkPlugin.RPFrameworkPlugin):
 					self.logger.debug(u'Sending device update: ' + dicttoxml.dicttoxml(deviceUpdate, True, "Device"))
 					self.pluginCommandQueue.put(RPFramework.RPFrameworkCommand.RPFrameworkCommand(GOOGLEHOME_SENDDEVICEUPDATE, deviceUpdate))
 				except:
-					self.logger.exception(u'Failed to generate Google Home update for device ' + unicode(newDev.name))
+					self.logger.exception(u'Failed to generate Google Home update for device ' + RPFramework.RPFrameworkUtils.to_unicode(newDev.name))
 					
 			
 	#/////////////////////////////////////////////////////////////////////////////////////
