@@ -1,32 +1,24 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
-#/////////////////////////////////////////////////////////////////////////////////////////
-#/////////////////////////////////////////////////////////////////////////////////////////
+# /////////////////////////////////////////////////////////////////////////////////////////
+# /////////////////////////////////////////////////////////////////////////////////////////
 # Domotics Pad Google Client Plugin by RogueProeliator <rp@rogueproeliator.com>
 # 	See plugin.py for more plugin details and information
-#/////////////////////////////////////////////////////////////////////////////////////////
-#/////////////////////////////////////////////////////////////////////////////////////////
+# /////////////////////////////////////////////////////////////////////////////////////////
+# /////////////////////////////////////////////////////////////////////////////////////////
 
-#/////////////////////////////////////////////////////////////////////////////////////////
+# /////////////////////////////////////////////////////////////////////////////////////////
 # Python imports
-#/////////////////////////////////////////////////////////////////////////////////////////
-import os
-import Queue
-import re
-import string
-import sys
-import threading
-import json
-
+# /////////////////////////////////////////////////////////////////////////////////////////
 import indigo
 import RPFramework
 
-#/////////////////////////////////////////////////////////////////////////////////////////
+# /////////////////////////////////////////////////////////////////////////////////////////
 # GoogleDeviceTypesDefinition
 #	Dictionary which defines the available Google Home device types and stores the 
 #   recommended traits to support for the device type in order to allow the most complete
 #   control/user experience "out of the box"
-#/////////////////////////////////////////////////////////////////////////////////////////
+# /////////////////////////////////////////////////////////////////////////////////////////
 googleDeviceTypesDefn = {
     'action.devices.types.DOOR': 
         {'Device': 'Door', 'DeviceType': 'action.devices.types.DOOR',
@@ -66,10 +58,10 @@ googleDeviceTypesDefn = {
             'Traits': ['action.devices.traits.LockUnlock', 'action.devices.traits.OpenClose']}
 }
 
-#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 # Maps an Indigo device (object) to the proper/default Google Assistant device type
 # that may be found in the types dictionary
-#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 def mapIndigoDeviceToGoogleType(device):
     if isinstance(device, indigo.DimmerDevice):
         return 'action.devices.types.LIGHT'
@@ -82,10 +74,10 @@ def mapIndigoDeviceToGoogleType(device):
     else:
         return ''
 
-#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 # Builds a Google Device sync definition for the given device utilizing the Global Props
 # defined by the user as well as the Indigo type
-#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 def buildGoogleHomeDeviceDefinition(device):
     # do not check the published flag so that this routine may be used without explicit
     # options... full implementations should only pass in published devices
@@ -117,10 +109,10 @@ def buildGoogleHomeDeviceDefinition(device):
     }
     return deviceDefnDict
 
-#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 # Builds the response for Google Assistant in the format required for updating the
 # Google Home Graph with the current status/state of the device provided
-#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 def buildGoogleHomeDeviceStatusUpdate(device):
     # configuration information is found in the global properties collection
     globalProps = device.sharedProps
@@ -151,11 +143,11 @@ def buildGoogleHomeDeviceStatusUpdate(device):
     # to be set as the key to this by the calling procedure
     return deviceStatusTraits
         
-#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 # Processes the EXECUTE intent against the given device IDs; note that multiple
 # commands may be present. The return is the results of the action in the format
 # expected by the Google Assistant for this particular execute command
-#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 def processExecuteRequest(commandsList):
     # the response object contains a list of devices that fall into each status; this will
     # be a dictionary of status with a value being the list of devices

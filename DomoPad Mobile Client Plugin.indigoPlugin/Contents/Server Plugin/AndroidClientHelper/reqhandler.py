@@ -29,7 +29,7 @@ from dataAccess import indigosql
 # Constants and configuration variables
 #/////////////////////////////////////////////////////////////////////////////////////////
 MAJOR_VERSION = "1"
-MINOR_VERSION = "4"
+MINOR_VERSION = "5"
 
 
 #/////////////////////////////////////////////////////////////////////////////////////////
@@ -234,7 +234,7 @@ class IndigoClientHelperHandler(BaseRequestHandler):
 			# execute the GET against the plugin's web server now
 			conn = httplib.HTTPConnection("localhost", "9176")
 			conn.connect()
-			request = conn.putrequest("GET", "/AndroidClientHelper/registerAndroidDevice?deviceId=" + str(deviceId) + "&pairingId=" + str(pairingId) + "&allowOverwrite=" + str(allowOverwrite))
+			request = conn.putrequest("GET", "/AndroidClientHelper/registerAndroidDevice?deviceId=" + urllib.quote_plus(deviceId) + "&pairingId=" + urllib.quote_plus(pairingId) + "&allowOverwrite=" + urllib.quote_plus(allowOverwrite))
 			conn.endheaders()
 
 			responseToAction = conn.getresponse()
@@ -252,7 +252,7 @@ class IndigoClientHelperHandler(BaseRequestHandler):
 			# execute a GET against the plugin's web server to complete the action
 			conn = httplib.HTTPConnection("localhost", "9176")
 			conn.connect()
-			request = conn.putrequest("GET", "/AndroidClientHelper/updateMobileDeviceStates?pairingId=" + str(pairingId) + "&deviceModel=" + str(deviceModel) + "&batteryStatus=" + str(batteryStatus) + "&batteryLevel=" + str(batteryLevel) + "&longitude=" + str(longitude) + "&latitude=" + str(latitude) + "&locationFix=" + str(locationFixTime))
+			request = conn.putrequest("GET", "/AndroidClientHelper/updateMobileDeviceStates?pairingId=" + urllib.quote_plus(pairingId) + "&deviceModel=" + urllib.quote_plus(deviceModel) + "&batteryStatus=" + urllib.quote_plus(batteryStatus) + "&batteryLevel=" + urllib.quote_plus(batteryLevel) + "&longitude=" + urllib.quote_plus(longitude) + "&latitude=" + urllib.quote_plus(latitude) + "&locationFix=" + urllib.quote_plus(locationFixTime))
 			conn.endheaders()
 
 			responseToAction = conn.getresponse()
