@@ -6,8 +6,9 @@ To update to the latest version of the application, please download the latest r
 =================================
 VERSION HISTORY
 =================================
-Version 2.3.0 [April 2022]:
+Version 2022.1.0 [May 2022]:
 * Updated code to Python 3 plugin format
+* Updated version scheming for the plugin
 
 Version 2.2.6 [June 2019]:
 * Bug Fix - Allows unicode characters in speak announcement notifications
