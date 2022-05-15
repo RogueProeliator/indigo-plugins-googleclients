@@ -362,7 +362,7 @@ class Plugin(RPFramework.RPFrameworkPlugin):
 		# execute the directory copy now...
 		try:
 			copy_tree(mainPluginHome, iwsPluginHome, preserve_mode=1)
-			self.logger.info("AndroidClientHelper successfully installed/updated. Restarting Indigo IWS server to complete install.")
+			self.logger.info("AndroidClientHelper successfully installed/updated. Restart Indigo IWS server to complete install.")
 			self.restartIWS()
 		except:
 			self.logger.error("Error copying AndroidClientHelper, AndroidClientHelper IWS plugin install could not complete.")
