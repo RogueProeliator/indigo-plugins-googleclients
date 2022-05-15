@@ -252,10 +252,10 @@ class IndigoClientHelperHandler(BaseRequestHandler):
 			# execute a GET against the plugin's web server to complete the action
 			conn = httplib.HTTPConnection("localhost", "9176")
 			conn.connect()
-			request = conn.putrequest("GET", "/AndroidClientHelper/updateMobileDeviceStates?pairingId=" + urllib.quote_plus(pairingId) + "&deviceModel=" + urllib.quote_plus(deviceModel) + "&batteryStatus=" + urllib.quote_plus(batteryStatus) + "&batteryLevel=" + urllib.quote_plus(batteryLevel) + "&longitude=" + urllib.quote_plus(longitude) + "&latitude=" + urllib.quote_plus(latitude) + "&locationFix=" + urllib.quote_plus(locationFixTime))
+			conn.putrequest("GET", "/AndroidClientHelper/updateMobileDeviceStates?pairingId=" + urllib.quote_plus(pairingId) + "&deviceModel=" + urllib.quote_plus(deviceModel) + "&batteryStatus=" + urllib.quote_plus(batteryStatus) + "&batteryLevel=" + urllib.quote_plus(batteryLevel) + "&longitude=" + urllib.quote_plus(longitude) + "&latitude=" + urllib.quote_plus(latitude) + "&locationFix=" + urllib.quote_plus(locationFixTime))
 			conn.endheaders()
 
-			responseToAction = conn.getresponse()
+			responseToAction     = conn.getresponse()
 			responseToActionText = responseToAction.read()
 		
 			return responseToActionText

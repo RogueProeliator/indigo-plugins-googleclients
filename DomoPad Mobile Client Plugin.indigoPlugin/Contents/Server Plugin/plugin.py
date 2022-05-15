@@ -264,8 +264,6 @@ class Plugin(RPFramework.RPFrameworkPlugin):
 	# send the updates to Google Home
 	# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	def deviceUpdated(self, origDev, newDev):
-		self.logger.info(f"Received device update for {newDev.name}")
-
 		# call the base's implementation first just to make sure all the right things happen elsewhere
 		indigo.PluginBase.deviceUpdated(self, origDev, newDev)
 
@@ -525,17 +523,17 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
 						indigo.server.log(f"Received status update for unknown device with Pairing ID: {pairing_id}", isError=True)
 		
 			# send whatever response was generated back to the caller
-			self.request.sendall(command_response)
+			self.request.sendall(command_response.encode('utf-8'))
 		
 		except Exception as e:
 			indigo.server.log(f"DomoPad Plugin Exception: Error processing remote request: {e}")
 			self.request.sendall("ERROR: Exception Processing Request")
 	
-	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	# This routine will split out the "arguments" section of the request into name/value
 	# pairs as standard query string arguments; note that this is now (Python 2.6+) in
 	# the urlparse module and must be updated if python updates
-	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	def parseArguments(self, qs_args):
 		return qsparse.parse_qs(qs_args, keep_blank_values=True)
 
