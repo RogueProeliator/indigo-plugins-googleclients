@@ -2,8 +2,7 @@
 # -*- coding: utf-8 -*-
 # /////////////////////////////////////////////////////////////////////////////////////////
 # /////////////////////////////////////////////////////////////////////////////////////////
-# Domotics Pad Google Client Plugin by RogueProeliator <rp@rogueproeliator.com>
-# 	See plugin.py for more plugin details and information
+# Domotics Pad Client Plugin by RogueProeliator <adam@duncanwaredevelopment.com>
 # /////////////////////////////////////////////////////////////////////////////////////////
 # /////////////////////////////////////////////////////////////////////////////////////////
 
@@ -15,9 +14,9 @@ import RPFramework
 
 # /////////////////////////////////////////////////////////////////////////////////////////
 # GoogleDeviceTypesDefinition
-#	Dictionary which defines the available Google Home device types and stores the 
-#   recommended traits to support for the device type in order to allow the most complete
-#   control/user experience "out of the box"
+# Dictionary which defines the available Google Home device types and stores the
+# recommended traits to support for the device type in order to allow the most complete
+# control/user experience "out of the box"
 # /////////////////////////////////////////////////////////////////////////////////////////
 googleDeviceTypesDefn = {
     'action.devices.types.DOOR': 
@@ -74,6 +73,7 @@ def mapIndigoDeviceToGoogleType(device):
     else:
         return ''
 
+
 # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 # Builds a Google Device sync definition for the given device utilizing the Global Props
 # defined by the user as well as the Indigo type
@@ -81,25 +81,25 @@ def mapIndigoDeviceToGoogleType(device):
 def buildGoogleHomeDeviceDefinition(device):
     # do not check the published flag so that this routine may be used without explicit
     # options... full implementations should only pass in published devices
-    globalProps = device.sharedProps
+    global_props = device.sharedProps
 
     # retrieve the device type for the Google Assistant device
-    googleDevType = globalProps.get('googleClientAsstType', '')
-    if googleDevType == '':
-        googleDevType = mapIndigoDeviceToGoogleType(device)
+    google_dev_type = global_props.get('googleClientAsstType', '')
+    if google_dev_type == '':
+        google_dev_type = mapIndigoDeviceToGoogleType(device)
 
     # retrieve the name of the device as defined by the user
-    googleDevName = globalProps.get('googleClientAsstName', '')
-    if googleDevName == '':
-        googleDevName = device.name
+    google_dev_name = global_props.get('googleClientAsstName', '')
+    if google_dev_name == '':
+        google_dev_name = device.name
 
-    deviceDefnDict = {
+    device_defn_dict = {
         'id': RPFramework.RPFrameworkUtils.to_unicode(device.id),
-        'type': googleDeviceTypesDefn[googleDevType]['DeviceType'],
-        'traits': list(googleDeviceTypesDefn[googleDevType]['Traits']),
+        'type': googleDeviceTypesDefn[google_dev_type]['DeviceType'],
+        'traits': list(googleDeviceTypesDefn[google_dev_type]['Traits']),
         'name': {
-            'defaultNames': [googleDevName],
-            'name': googleDevName
+            'defaultNames': [google_dev_name],
+            'name': google_dev_name
         },
         'willReportState': False,
         'deviceInfo': {
@@ -107,7 +107,8 @@ def buildGoogleHomeDeviceDefinition(device):
             'model': device.model
         }
     }
-    return deviceDefnDict
+    return device_defn_dict
+
 
 # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 # Builds the response for Google Assistant in the format required for updating the
@@ -115,33 +116,33 @@ def buildGoogleHomeDeviceDefinition(device):
 # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 def buildGoogleHomeDeviceStatusUpdate(device):
     # configuration information is found in the global properties collection
-    globalProps = device.sharedProps
+    global_props = device.sharedProps
 
     # retrieve the device type for the Google Assistant device
-    googleDevType = globalProps.get('googleClientAsstType', '')
-    if googleDevType == '':
-        googleDevType = mapIndigoDeviceToGoogleType(device)
+    google_dev_type = global_props.get('googleClientAsstType', '')
+    if google_dev_type == '':
+        google_dev_type = mapIndigoDeviceToGoogleType(device)
 
     # the status returned depends on the traits that are defined for this
     # device (dependent upon the device type)
-    deviceStatusTraits = {}
-    for trait in googleDeviceTypesDefn[googleDevType]['Traits']:
+    device_status_traits = {}
+    for trait in googleDeviceTypesDefn[google_dev_type]['Traits']:
         if trait == 'action.devices.traits.Brightness':
-            deviceStatusTraits['brightness'] = device.states.get('brightnessLevel', 0)
+            device_status_traits['brightness'] = device.states.get('brightnessLevel', 0)
         elif trait == 'action.devices.traits.ColorSetting':
             # not yet implemented... could be added to Light type as an RGB state, such
             # as for Hue lights
             pass
         elif trait == 'action.devices.traits.OnOff':
-            deviceStatusTraits['on'] = device.states.get('onOffState', False)
+            device_status_traits['on'] = device.states.get('onOffState', False)
 
     # the online status will simply be if the device is enabled; should we look at a status
     # value?
-    deviceStatusTraits['online'] = device.configured and device.enabled and device.states.get('errorState', '') == ''
+    device_status_traits['online'] = device.configured and device.enabled and device.states.get('errorState', '') == ''
     
     # return the trait/state dictionary back... note that the device ID will need
     # to be set as the key to this by the calling procedure
-    return deviceStatusTraits
+    return device_status_traits
         
 # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 # Processes the EXECUTE intent against the given device IDs; note that multiple
@@ -151,69 +152,69 @@ def buildGoogleHomeDeviceStatusUpdate(device):
 def processExecuteRequest(commandsList):
     # the response object contains a list of devices that fall into each status; this will
     # be a dictionary of status with a value being the list of devices
-    deviceStatusResults = {}
+    device_status_results = {}
 
     # there may be multiple commands to execute in the array
     for commandDefn in commandsList:
         # build the list of devices against which we must execute the
         # command(s) provided
-        devicesList = []
+        devices_list = []
         for deviceId in commandDefn['devices']:
-            indigoDevice = indigo.devices[int(deviceId['id'])]
-            devicesList.append(indigoDevice)
-            if not indigoDevice.id in deviceStatusResults:
-                deviceStatusResults[indigoDevice.id] = ''
+            indigo_device = indigo.devices[int(deviceId['id'])]
+            devices_list.append(indigo_device)
+            if indigo_device.id not in device_status_results:
+                device_status_results[indigo_device.id] = ''
 
         # loop through each device, executing the requested commands only if they are
         # valid for the device type found
-        for device in devicesList:
+        for device in devices_list:
             # determine if the device is online and configured; otherwise it cannot accept the command
-            isDeviceOnline = device.configured and device.enabled and device.states.get('errorState', '') == ''
+            is_device_online = device.configured and device.enabled and device.states.get('errorState', '') == ''
 
             # execute the requested command, if available
-            if isDeviceOnline == False:
-                deviceStatusResults[device.id] = 'OFFLINE'
+            if not is_device_online:
+                device_status_results[device.id] = 'OFFLINE'
             else:
                 for execCommand in commandDefn['execution']:
-                    commandId = execCommand['command']
-                    if commandId == 'action.devices.commands.OnOff':
-                        if execCommand['params']['on'] == True:
+                    command_id = execCommand['command']
+                    if command_id == 'action.devices.commands.OnOff':
+                        if execCommand['params']['on']:
                             indigo.device.turnOn(device.id)
                         else:
                             indigo.device.turnOff(device.id)
                 
                 # mark the execution as pending since the commands are generally asynchronous in
                 # nature... the statuses will be updated when the device changes
-                if deviceStatusResults[device.id] == '':
-                    deviceStatusResults[device.id] = 'PENDING'
+                if device_status_results[device.id] == '':
+                    device_status_results[device.id] = 'PENDING'
     
-    # formulate the return... this is an arry with a new result dictionary for each
+    # formulate the return... this is an array with a new result dictionary for each
     # status within the devices results
-    commandReturn = []
-    successDevices = {'ids': [], 'status': 'SUCCESS' }
-    pendingDevices = {'ids': [], 'status': 'PENDING' }
-    errorDevices = {'ids': [], 'status': 'ERROR' }
-    offlineDevices = {'ids': [], 'status': 'OFFLINE' }
+    command_return = []
+    success_devices = {'ids': [], 'status': 'SUCCESS'}
+    pending_devices = {'ids': [], 'status': 'PENDING'}
+    error_devices   = {'ids': [], 'status': 'ERROR'}
+    offline_devices = {'ids': [], 'status': 'OFFLINE'}
 
     # add each device result to the appropriate list
-    for deviceId, result in deviceStatusResults.items():
+    for deviceId, result in device_status_results.items():
         if result == 'SUCCESS':
-            successDevices['ids'].append(str(deviceId))
+            success_devices['ids'].append(str(deviceId))
         elif result == 'PENDING':
-            pendingDevices['ids'].append(str(deviceId))
+            pending_devices['ids'].append(str(deviceId))
         elif result == 'ERROR':
-            errorDevices['ids'].append(str(deviceId))
+            error_devices['ids'].append(str(deviceId))
         elif result == 'offlineDevices':
-            offlineDevices['ids'].append(str(deviceId))
+            offline_devices['ids'].append(str(deviceId))
 
     # build the composite results array
-    if len(successDevices['ids']) > 0:
-        commandReturn.append(successDevices)
-    if len(pendingDevices['ids']) > 0:
-        commandReturn.append(pendingDevices)
-    if len(errorDevices['ids']) > 0:
-        commandReturn.append(errorDevices)
-    if len(offlineDevices['ids']) > 0:
-        commandReturn.append(offlineDevices)
+    if len(success_devices['ids']) > 0:
+        command_return.append(success_devices)
+    if len(pending_devices['ids']) > 0:
+        command_return.append(pending_devices)
+    if len(error_devices['ids']) > 0:
+        command_return.append(error_devices)
+    if len(offline_devices['ids']) > 0:
+        command_return.append(offline_devices)
     
-    return commandReturn
+    return command_return

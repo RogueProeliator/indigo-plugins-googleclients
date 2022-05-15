@@ -2,8 +2,7 @@
 # -*- coding: utf-8 -*-
 # /////////////////////////////////////////////////////////////////////////////////////////
 # /////////////////////////////////////////////////////////////////////////////////////////
-# Domotics Pad Google Client Plugin by RogueProeliator <rp@rogueproeliator.com>
-# 	See plugin.py for more plugin details and information
+# Domotics Pad Client Plugin by RogueProeliator <adam@duncanwaredevelopment.com>
 # /////////////////////////////////////////////////////////////////////////////////////////
 # /////////////////////////////////////////////////////////////////////////////////////////
 
@@ -12,11 +11,10 @@
 # /////////////////////////////////////////////////////////////////////////////////////////
 import RPFramework
 
+
 # /////////////////////////////////////////////////////////////////////////////////////////
 # /////////////////////////////////////////////////////////////////////////////////////////
 # DomoPadAndroidClient
-#	Handles the information related to a specific Android client connected/talking to
-#	Indigo and HousePad Plugins
 # /////////////////////////////////////////////////////////////////////////////////////////
 # /////////////////////////////////////////////////////////////////////////////////////////
 class DomoPadAndroidClient(RPFramework.RPFrameworkNonCommChildDevice):
@@ -48,10 +46,9 @@ class DomoPadAndroidClient(RPFramework.RPFrameworkNonCommChildDevice):
 		super(DomoPadAndroidClient, self).initiateCommunications()
 		
 		# update the state of the device to reflect the pairing status...
-		currentPairingState = self.indigoDevice.states.get("isPaired", False)
-		currentPairingProp = self.indigoDevice.pluginProps.get("deviceRegistrationId", "")
+		current_pairing_prop = self.indigoDevice.pluginProps.get("deviceRegistrationId", "")
 		
-		if currentPairingProp == "":
+		if current_pairing_prop == "":
 			self.indigoDevice.updateStateOnServer("isPaired", False, uiValue="Not Paired")
 		else:
 			self.indigoDevice.updateStateOnServer("isPaired", True, uiValue="Paired")
@@ -60,8 +57,8 @@ class DomoPadAndroidClient(RPFramework.RPFrameworkNonCommChildDevice):
 # /////////////////////////////////////////////////////////////////////////////////////////
 # /////////////////////////////////////////////////////////////////////////////////////////
 # VideoCameraFeed
-#	Handles the specification of a video feed that can be shown within HousePad, such as
-#	to show live security camera feeds
+# Handles the specification of a video feed that can be shown within HousePad, such as
+# to show live security camera feeds
 # /////////////////////////////////////////////////////////////////////////////////////////
 # /////////////////////////////////////////////////////////////////////////////////////////
 class VideoCameraFeed(RPFramework.RPFrameworkNonCommChildDevice):
