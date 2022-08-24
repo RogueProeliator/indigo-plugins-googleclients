@@ -27,5 +27,5 @@ jobs:
       with:
         tag: ${{ github.event.inputs.release_num }}
         artifacts: "DomoPad Mobile Client Plugin.indigoPlugin.zip"
-        bodyFile: "Release"
+        body: "Release"
         prerelease: ${{ github.event.inputs.is_prerelease }}
