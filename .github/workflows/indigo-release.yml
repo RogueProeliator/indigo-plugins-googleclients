@@ -16,7 +16,7 @@ jobs:
     steps:
     - uses: montudor/action-zip@v1
       with:
-        args: zip -qq -r DomoPad\ Mobile\ Client\ Plugin.indigoPlugin.zip DomoPad\ Mobile\ Client\ Plugin.indigoPlugin
+        args: zip -qq -r "DomoPad Mobile Client Plugin.indigoPlugin.zip" "DomoPad Mobile Client Plugin.indigoPlugin"
   
     - uses: ncipollo/release-action@v1
       with:
