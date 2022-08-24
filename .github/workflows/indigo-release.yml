@@ -8,6 +8,10 @@ on:
         description: 'Version Number'
         default: ''
         required: true
+      is_prerelease:
+        description: 'Pre-Release?'
+        default: false
+        required: true
 
 jobs:
   createrelease:
@@ -24,3 +28,4 @@ jobs:
         tag: ${{ github.event.inputs.release_num }}
         artifacts: "DomoPad Mobile Client Plugin.indigoPlugin.zip"
         bodyFile: "Release"
+        prerelease: ${{ github.event.inputs.is_prerelease }}
