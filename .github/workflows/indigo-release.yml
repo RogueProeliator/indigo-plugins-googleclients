@@ -1,0 +1,26 @@
+# Manually triggered workflow for creating an Indigo deployment release
+name: Release for Indigo
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_num:
+        description: 'Version Number'
+        default: ''
+        required: true
+
+jobs:
+  createrelease:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: montudor/action-zip@v1
+      with:
+        args: zip -qq -r DomoPad\ Mobile\ Client\ Plugin.indigoPlugin.zip DomoPad\ Mobile\ Client\ Plugin.indigoPlugin
+  
+    - uses: ncipollo/release-action@v1
+      with:
+        tag: ${{ release_num }}
+        artifacts: "DomoPad Mobile Client Plugin.indigoPlugin.zip"
+        bodyFile: "Release"
+        token: ${{ secrets.YOUR_GITHUB_TOKEN }}
