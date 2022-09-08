@@ -24,15 +24,15 @@ import dicttoxml
 
 #/////////////////////////////////////////////////////////////////////////////////////////
 #region Constants and configuration variables
-DOMOPADCOMMAND_SENDNOTIFICATION                = u'SendNotification'
-DOMOPADCOMMAND_SPEAKANNOUNCEMENTNOTIFICATION   = u'SendTextToSpeechNotification'
-DOMOPADCOMMAND_CPDISPLAYNOTIFICATION           = u'SendCPDisplayRequest'
-DOMOPADCOMMAND_DEVICEUPDATEREQUESTNOTIFICATION = u'RequestDeviceStatusUpdate'
+DOMOPADCOMMAND_SENDNOTIFICATION                = 'SendNotification'
+DOMOPADCOMMAND_SPEAKANNOUNCEMENTNOTIFICATION   = 'SendTextToSpeechNotification'
+DOMOPADCOMMAND_CPDISPLAYNOTIFICATION           = 'SendCPDisplayRequest'
+DOMOPADCOMMAND_DEVICEUPDATEREQUESTNOTIFICATION = 'RequestDeviceStatusUpdate'
 
-GOOGLEHOME_SENDDEVICEUPDATE = u'SendHomeGraphUpdate'
-GOOGLEHOME_REQUESTSYNC      = u'RequestHomeGraphSync'
+GOOGLEHOME_SENDDEVICEUPDATE = 'SendHomeGraphUpdate'
+GOOGLEHOME_REQUESTSYNC      = 'RequestHomeGraphSync'
 
-INDIGO_SERVER_CLOUD_URL     = u'https://us-central1-domotics-pad-indigo-client.cloudfunctions.net/indigo-server-portal'
+INDIGO_SERVER_CLOUD_URL     = 'https://us-central1-domotics-pad-indigo-client.cloudfunctions.net/indigo-server-portal'
 
 #endregion
 #/////////////////////////////////////////////////////////////////////////////////////////
@@ -88,22 +88,22 @@ class Plugin(RPFramework.RPFrameworkPlugin.RPFrameworkPlugin):
 	def handleUnknownPluginCommand(self, rpCommand, reQueueCommandsList):
 		if rpCommand.commandName == GOOGLEHOME_SENDDEVICEUPDATE:
 			try:
-				reflectorUrl = indigo.server.getReflectorURL() + u'/'
+				reflectorUrl = f"{indigo.server.getReflectorURL()}/"
 				deviceUpdateXml = dicttoxml.dicttoxml(rpCommand.commandPayload, True, "Device")
 				requestBody = { "intent": "googlehomegraph.UPDATE_DEVICE", "payload": { "agentId": reflectorUrl, "deviceUpdate": deviceUpdateXml }}
 				self.logger.info('Sending ' + json.dumps(requestBody))
 				requests.post(INDIGO_SERVER_CLOUD_URL, data=json.dumps(requestBody))
 			except:
-				self.logger.exception(u'Failed to send device update to Google Home')
+				self.logger.exception('Failed to send device update to Google Home')
 
 		elif rpCommand.commandName == GOOGLEHOME_REQUESTSYNC:
 			try:
-				reflectorUrl = indigo.server.getReflectorURL() + u'/'
-				requestBody  = '{ "intent": "googlehomegraph.REQUEST_SYNC", "payload": { "agentId": "' + reflectorUrl + '" } }'
-				self.logger.debug(u'Sending intent to Indigo Cloud for synchronization with {0}'.format(reflectorUrl))
+				reflectorUrl = f"{indigo.server.getReflectorURL()}/'"
+				requestBody  = f'{{ "intent": "googlehomegraph.REQUEST_SYNC", "payload": {{ "agentId": "{reflectorUrl}" }} }}'
+				self.logger.debug(f"Sending intent to Indigo Cloud for synchronization with {reflectorUrl}")
 				requests.post(INDIGO_SERVER_CLOUD_URL, data=requestBody)
 			except Exception:
-				self.logger.exception(u'Failed to request that device definitions re-synchronize with Google Home/Assistant')
+				self.logger.exception('Failed to request that device definitions re-synchronize with Google Home/Assistant')
 			
 
 	#/////////////////////////////////////////////////////////////////////////////////////	
@@ -114,7 +114,7 @@ class Plugin(RPFramework.RPFrameworkPlugin.RPFrameworkPlugin):
 	# send the updates to Google Home
 	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	def deviceUpdated(self, origDev, newDev):
-		self.logger.debug(u'Received device update for ' + newDev.name)
+		self.logger.debug(f"Received device update for {newDev.name}")
 
 		# call the base's implementation first just to make sure all the right things happen elsewhere
 		indigo.PluginBase.deviceUpdated(self, origDev, newDev)
@@ -123,18 +123,18 @@ class Plugin(RPFramework.RPFrameworkPlugin.RPFrameworkPlugin):
 		# the option to send devices changes is checked
 		if self.reportStateToAssistant == True and 'com.indigodomo.indigoserver' in newDev.globalProps:
 			globalPropsDict = newDev.globalProps['com.indigodomo.indigoserver']
-			if globalPropsDict.get(u'googleClientPublishHome', False) == True and globalPropsDict.get(u'googleClientSendUpdates', False) == True:
+			if globalPropsDict.get('googleClientPublishHome', False) == True and globalPropsDict.get('googleClientSendUpdates', False) == True:
 				try:
 					# retrieve the device update from the server in the same format as the query for
 					# the device status
 					deviceUpdate = indigo.rawServerRequest("GetDevice", {"ID": newDev.id})
 
 					# schedule a call to the Google Home Graph's update via the Cloud Function
-					self.logger.info(u'Scheduling device update of {0} ({1}) with Google Home/Assistant'.format(newDev.id, newDev.name))
-					self.logger.debug(u'Sending device update: ' + dicttoxml.dicttoxml(deviceUpdate, True, "Device"))
+					self.logger.info(f'Scheduling device update of {newDev.id} ({newDev.name}) with Google Home/Assistant')
+					self.logger.debug(f'Sending device update: {dicttoxml.dicttoxml(deviceUpdate, True, "Device")}')
 					self.pluginCommandQueue.put(RPFramework.RPFrameworkCommand.RPFrameworkCommand(GOOGLEHOME_SENDDEVICEUPDATE, deviceUpdate))
 				except:
-					self.logger.exception(u'Failed to generate Google Home update for device ' + RPFramework.RPFrameworkUtils.to_unicode(newDev.name))
+					self.logger.exception(f'Failed to generate Google Home update for device {newDev.name}')
 					
 			
 	#/////////////////////////////////////////////////////////////////////////////////////
@@ -149,7 +149,7 @@ class Plugin(RPFramework.RPFrameworkPlugin.RPFrameworkPlugin):
 		availableHomeDevices = []
 
 		for dev in indigo.devices:
-			if dev.sharedProps.get(u'googleClientPublishHome', False):
+			if dev.sharedProps.get('googleClientPublishHome', False):
 				publishedHomeDevices.append((dev.id, dev.name))
 			else:
 				availableHomeDevices.append((dev.id, dev.name))
@@ -172,7 +172,7 @@ class Plugin(RPFramework.RPFrameworkPlugin.RPFrameworkPlugin):
 		if valuesDict is None:
 			return []
 			
-		publishedDeviceId = unicode(valuesDict.get(u"publishedDevice", ""))
+		publishedDeviceId = f'{valuesDict.get(u"publishedDevice", "")}'
 		if publishedDeviceId is None or publishedDeviceId == "":
 			return []
 
@@ -191,13 +191,13 @@ class Plugin(RPFramework.RPFrameworkPlugin.RPFrameworkPlugin):
 			device = indigo.devices.get(int(valuesDict["publishedDevice"]), None)
 
 			valuesDict["enableDeviceDetailUI"]       = True
-			valuesDict["publishToGoogle"]            = device.sharedProps.get(u'googleClientPublishHome', False)
-			valuesDict["deviceDetailsPublishedName"] = device.sharedProps.get(u'googleClientAsstName'   , u'')
-			valuesDict["deviceDetailsPublishedType"] = device.sharedProps.get(u'googleClientAsstType'   , u'')
-			valuesDict["sendUpdatesToGoogle"]        = device.sharedProps.get(u'googleClientSendUpdates', u'')
-			valuesDict["deviceDetailsPINCode"]       = device.sharedProps.get(u'googleClientPINCode'    , u'')
+			valuesDict["publishToGoogle"]            = device.sharedProps.get('googleClientPublishHome', False)
+			valuesDict["deviceDetailsPublishedName"] = device.sharedProps.get('googleClientAsstName'   , '')
+			valuesDict["deviceDetailsPublishedType"] = device.sharedProps.get('googleClientAsstType'   , '')
+			valuesDict["sendUpdatesToGoogle"]        = device.sharedProps.get('googleClientSendUpdates', '')
+			valuesDict["deviceDetailsPINCode"]       = device.sharedProps.get('googleClientPINCode'    , '')
 		except:
-			self.logger.exception(u'Failed to load published device properties')
+			self.logger.exception('Failed to load published device properties')
 		return valuesDict
 
 	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -209,27 +209,27 @@ class Plugin(RPFramework.RPFrameworkPlugin.RPFrameworkPlugin):
 			device      = indigo.devices.get(int(valuesDict["publishedDevice"]), None)
 			globalProps = device.sharedProps
 
-			globalProps[u'googleClientPublishHome'] = valuesDict["publishToGoogle"]
-			globalProps[u'googleClientAsstName']    = valuesDict["deviceDetailsPublishedName"]
-			globalProps[u'googleClientAsstType']    = valuesDict["deviceDetailsPublishedType"]
-			globalProps[u'googleClientSendUpdates'] = valuesDict["sendUpdatesToGoogle"]
-			globalProps[u'googleClientPINCode']     = valuesDict["deviceDetailsPINCode"]
+			globalProps['googleClientPublishHome'] = valuesDict["publishToGoogle"]
+			globalProps['googleClientAsstName']    = valuesDict["deviceDetailsPublishedName"]
+			globalProps['googleClientAsstType']    = valuesDict["deviceDetailsPublishedType"]
+			globalProps['googleClientSendUpdates'] = valuesDict["sendUpdatesToGoogle"]
+			globalProps['googleClientPINCode']     = valuesDict["deviceDetailsPINCode"]
 			device.replaceSharedPropsOnServer(globalProps)
 
 			valuesDict["publishedDevice"]            = None
 			valuesDict["publishToGoogle"]            = False
 			valuesDict['publishedDeviceSelected']    = False
-			valuesDict["deviceDetailsPublishedName"] = u''
+			valuesDict["deviceDetailsPublishedName"] = ''
 			valuesDict["deviceDetailsPublishedType"] = None
 			valuesDict["sendUpdatesToGoogle"]        = False
-			valuesDict["deviceDetailsPINCode"]       = u''
+			valuesDict["deviceDetailsPINCode"]       = ''
 
 			valuesDict["enableDeviceDetailUI"]       = False
 
 			# let Google know that a synchronization is required
 			
 		except:
-			self.logger.exception(u'Failed to update published device properties')
+			self.logger.exception('Failed to update published device properties')
 		return valuesDict
 
 
@@ -241,14 +241,14 @@ class Plugin(RPFramework.RPFrameworkPlugin.RPFrameworkPlugin):
 	# cooling)
 	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	def apiSetThermostatSetpoint(self, action, dev=None, callerWaitingForResult=None):
-		deviceId    = int(action.props["body_params"].get(u'deviceId', '0'))
-		newSetpoint = float(action.props["body_params"].get(u'setpoint', '0.0'))
+		deviceId    = int(action.props["body_params"].get('deviceId', '0'))
+		newSetpoint = float(action.props["body_params"].get('setpoint', '0.0'))
 		isSuccess   = False
-		message     = u''
+		message     = ''
 
 		if deviceId == 0 or newSetpoint == 0.0:
-			self.logger.warning(u'Unable to process API request to set thermostat setpoint due to missing or invalid arguments')
-			message = u'Unable to process API request to set thermostat setpoint due to missing or invalid arguments'
+			self.logger.warning('Unable to process API request to set thermostat setpoint due to missing or invalid arguments')
+			message = 'Unable to process API request to set thermostat setpoint due to missing or invalid arguments'
 		else:
 			device = indigo.devices[deviceId]
 			if device.hvacMode == indigo.kHvacMode.HeatCool or device.hvacMode == indigo.kHvacMode.ProgramHeatCool or device.hvacMode == indigo.kHvacMode.Cool or device.hvacMode == indigo.kHvacMode.ProgramCool:
@@ -258,9 +258,9 @@ class Plugin(RPFramework.RPFrameworkPlugin.RPFrameworkPlugin):
 				indigo.thermostat.setHeatSetpoint(deviceId, value=newSetpoint)
 				isSuccess = True
 			else:
-				message = u'Thermostat is off or not in a mode that accepts setpoint changes'
+				message = 'Thermostat is off or not in a mode that accepts setpoint changes'
 		
-		return '{{ "result": "{0}", "message": "{1}" }}'.format(isSuccess, message)
+		return f'{{ "result": "{isSuccess}", "message": "{message}" }}'
 
 	
 	#/////////////////////////////////////////////////////////////////////////////////////
@@ -272,6 +272,6 @@ class Plugin(RPFramework.RPFrameworkPlugin.RPFrameworkPlugin):
 	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	def requestResyncWithGoogle(self):
 		# simply schedule a resynchronization request with the background processor
-		self.logger.info(u'Scheduling re-synchronization request with Google Home/Assistant')
+		self.logger.info('Scheduling re-synchronization request with Google Home/Assistant')
 		self.pluginCommandQueue.put(RPFramework.RPFrameworkCommand.RPFrameworkCommand(GOOGLEHOME_REQUESTSYNC))
 	
