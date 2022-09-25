@@ -4,4 +4,3 @@ Documentation/ export-ignore
 *.code-workspace export-ignore
 LICENSE.txt export-ignore
 README.md export-ignore
-VERSION_HISTORY.txt export-ignore
