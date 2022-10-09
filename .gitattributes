@@ -2,5 +2,6 @@
 .gitignore export-ignore
 Documentation/ export-ignore
 *.code-workspace export-ignore
+.vscode/ export-ignore
 LICENSE.txt export-ignore
 README.md export-ignore

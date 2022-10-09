@@ -1,13 +1,5 @@
 <RPFrameworkConfig>
 	<pluginConfig>
-		<pluginParams>
-			<param indigoId="indigoPort" paramType="ParamTypeInteger" isRequired="True">
-				<minValue>1</minValue>
-				<maxValue>99999</maxValue>
-				<defaultValue>10002</defaultValue>
-				<invalidValueMessage><![CDATA[Please enter the Indigo remote connection port]]></invalidValueMessage>
-			</param>
-		</pluginParams>
 		<guiConfiguration>
 			<remoteCommandPort>9176</remoteCommandPort>
 			<pluginCommandQueueIdleSleep>3</pluginCommandQueueIdleSleep>
