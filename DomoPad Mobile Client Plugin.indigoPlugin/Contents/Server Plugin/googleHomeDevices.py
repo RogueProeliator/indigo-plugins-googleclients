@@ -1,23 +1,13 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 #/////////////////////////////////////////////////////////////////////////////////////////
-#/////////////////////////////////////////////////////////////////////////////////////////
 # Domotics Pad Google Client Plugin by RogueProeliator <rp@rogueproeliator.com>
 # 	See plugin.py for more plugin details and information
-#/////////////////////////////////////////////////////////////////////////////////////////
 #/////////////////////////////////////////////////////////////////////////////////////////
 
 #/////////////////////////////////////////////////////////////////////////////////////////
 # Python imports
 #/////////////////////////////////////////////////////////////////////////////////////////
-import os
-import Queue
-import re
-import string
-import sys
-import threading
-import json
-
 import indigo
 import RPFramework
 
@@ -74,6 +64,7 @@ SUPPORTED_INDIGO_CLASSES = {
     indigo.ThermostatDevice  : None,
 }
 
+
 # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 # Maps an Indigo device (object) to the proper/default Google Assistant device type
 # that may be found in the types dictionary
@@ -89,6 +80,7 @@ def mapIndigoDeviceToGoogleType(device):
         return 'action.devices.types.SENSOR'
     else:
         return ''
+
 
 #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 # Maps an Indigo device (object) to the proper/default Google Assistant device type
@@ -106,6 +98,7 @@ def getAvailableSubtypesForDevice(device):
         return []
     except:
         return [("invalid", "invalid device type")]
+
 
 #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 # Determines the sub type of a device based upon a specified sub type, a device
@@ -221,6 +214,7 @@ def getDeviceSubType(device):
                 sub_type = indigo.kSensorDeviceSubType.Binary
     return sub_type
 
+
 # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 # Builds a Google Device sync definition for the given device utilizing the Global Props
 # defined by the user as well as the Indigo type
@@ -290,7 +284,8 @@ def buildGoogleHomeDeviceStatusUpdate(device):
     # return the trait/state dictionary back... note that the device ID will need
     # to be set as the key to this by the calling procedure
     return device_status_traits
-        
+
+
 # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 # Processes the EXECUTE intent against the given device IDs; note that multiple
 # commands may be present. The return is the results of the action in the format
