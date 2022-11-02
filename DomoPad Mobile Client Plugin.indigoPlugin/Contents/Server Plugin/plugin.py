@@ -9,7 +9,7 @@
 #/////////////////////////////////////////////////////////////////////////////////////////
 #region Python imports
 from   distutils.dir_util import copy_tree
-import simplejson as json
+import json
 import requests
 
 import RPFramework
@@ -57,8 +57,7 @@ class Plugin(RPFramework.RPFrameworkPlugin.RPFrameworkPlugin):
 		# initialize the member variable that tracks whether or not we are reporting device
 		# states back to Google Home
 		self.reportStateToAssistant = pluginPrefs.get("sendUpdatesToGoogle", False)
-		
-		
+
 	#/////////////////////////////////////////////////////////////////////////////////////
 	# Indigo control methods
 	#/////////////////////////////////////////////////////////////////////////////////////
