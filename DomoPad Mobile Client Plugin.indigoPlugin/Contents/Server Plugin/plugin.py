@@ -17,6 +17,8 @@ import domoPadDevices
 import googleHomeDevices
 import dicttoxml
 
+from RPFramework import RPFrameworkPlugin
+
 #endregion
 #/////////////////////////////////////////////////////////////////////////////////////////
 
@@ -41,7 +43,7 @@ INDIGO_SERVER_CLOUD_URL     = 'https://us-central1-domotics-pad-indigo-client.cl
 #	Primary Indigo plugin class that is universal for all devices (receivers) to be
 #	controlled
 #/////////////////////////////////////////////////////////////////////////////////////////
-class Plugin(RPFramework.RPFrameworkPlugin.RPFrameworkPlugin):
+class Plugin(RPFrameworkPlugin):
 	
 	#/////////////////////////////////////////////////////////////////////////////////////
 	# Class construction and destruction methods
