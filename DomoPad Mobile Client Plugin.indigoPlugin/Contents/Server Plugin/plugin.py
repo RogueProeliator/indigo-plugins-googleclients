@@ -17,7 +17,7 @@ import domoPadDevices
 import googleHomeDevices
 import dicttoxml
 
-from RPFramework import RPFrameworkPlugin
+from RPFramework.RPFrameworkPlugin import RPFrameworkPlugin
 
 #endregion
 #/////////////////////////////////////////////////////////////////////////////////////////
