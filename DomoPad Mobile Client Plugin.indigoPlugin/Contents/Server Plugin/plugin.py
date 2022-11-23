@@ -54,9 +54,9 @@ class Plugin(RPFrameworkPlugin):
 	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	def __init__(self, pluginId, pluginDisplayName, pluginVersion, pluginPrefs):
 		# RP framework base class's init method
-		super(Plugin, self).__init__(pluginId, pluginDisplayName, pluginVersion, pluginPrefs, managedDeviceClassModule=domoPadDevices)
+		super().__init__(pluginId, pluginDisplayName, pluginVersion, pluginPrefs, managedDeviceClassModule=domoPadDevices)
 
-		# initialize the member variable that tracks whether or not we are reporting device
+		# initialize the member variable that tracks whether we are reporting device
 		# states back to Google Home
 		self.reportStateToAssistant = pluginPrefs.get("sendUpdatesToGoogle", False)
 
