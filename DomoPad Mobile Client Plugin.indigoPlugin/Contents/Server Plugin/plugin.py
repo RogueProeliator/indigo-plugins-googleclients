@@ -73,8 +73,7 @@ class Plugin(RPFrameworkPlugin):
 		# subscribe to all devices changes so that we may push them up to Google Home
 		# (if so configured)
 		indigo.devices.subscribeToChanges()
-		
-		
+
 	#/////////////////////////////////////////////////////////////////////////////////////
 	# Action/command processing routines
 	#/////////////////////////////////////////////////////////////////////////////////////	
@@ -101,7 +100,6 @@ class Plugin(RPFrameworkPlugin):
 				requests.post(INDIGO_SERVER_CLOUD_URL, data=requestBody)
 			except Exception:
 				self.logger.exception('Failed to request that device definitions re-synchronize with Google Home/Assistant')
-			
 
 	#/////////////////////////////////////////////////////////////////////////////////////	
 	# Plugin Event Overrides
@@ -132,8 +130,7 @@ class Plugin(RPFrameworkPlugin):
 					self.pluginCommandQueue.put(RPFramework.RPFrameworkCommand.RPFrameworkCommand(GOOGLEHOME_SENDDEVICEUPDATE, deviceUpdate))
 				except:
 					self.logger.exception(f'Failed to generate Google Home update for device {newDev.name}')
-					
-			
+
 	#/////////////////////////////////////////////////////////////////////////////////////
 	# Configuration Dialog Callback Routines
 	#/////////////////////////////////////////////////////////////////////////////////////
@@ -229,7 +226,6 @@ class Plugin(RPFrameworkPlugin):
 			self.logger.exception('Failed to update published device properties')
 		return valuesDict
 
-
 	#/////////////////////////////////////////////////////////////////////////////////////
 	# API Action Handlers
 	#/////////////////////////////////////////////////////////////////////////////////////
@@ -259,7 +255,6 @@ class Plugin(RPFrameworkPlugin):
 		
 		return f'{{ "result": "{isSuccess}", "message": "{message}" }}'
 
-	
 	#/////////////////////////////////////////////////////////////////////////////////////
 	# Utility Routines
 	#/////////////////////////////////////////////////////////////////////////////////////		
@@ -271,4 +266,54 @@ class Plugin(RPFrameworkPlugin):
 		# simply schedule a resynchronization request with the background processor
 		self.logger.info('Scheduling re-synchronization request with Google Home/Assistant')
 		self.pluginCommandQueue.put(RPFramework.RPFrameworkCommand.RPFrameworkCommand(GOOGLEHOME_REQUESTSYNC))
-	
+
+	# /////////////////////////////////////////////////////////////////////////////////////
+	# HTTP API Requests
+	# /////////////////////////////////////////////////////////////////////////////////////
+	# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	# API call that allows the Android client to register itself against a specific Indigo
+	# Android device
+	# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	def registerAndroidDevice(self, action, dev=None, callerWaitingForResult = None):
+		body_params     = action.get("body_params", indigo.Dict())
+		device_id       = body_params.get("deviceId", "")
+		pairing_id      = body_params.get("pairingId", "")
+		allow_overwrite = int(body_params.get("allowOverwrite", 0))
+
+		if device_id == "" or pairing_id == "":
+			return {"status": 400}
+
+		android_dev  = indigo.devices[int(device_id)]
+		plugin_props = android_dev.pluginProps
+
+		if plugin_props.get("deviceRegistrationId", "") == "" or allow_overwrite == 1:
+			plugin_props["deviceRegistrationId"] = pairing_id
+			android_dev.replacePluginPropsOnServer(plugin_props)
+			android_dev.updateStateOnServer("isPaired", True, uiValue="Paired")
+			command_response = "OK"
+			indigo.server.log(f"Successfully paired Android device to Indigo Device {device_id}")
+		else:
+			indigo.server.log("Rejected device pairing - Indigo Device already paired to another Android device.", isError=True)
+			command_response = "ERROR: Exception Processing Request"
+
+		return {"status": 200, "content": command_response}
+
+	def unregisterAndroidDevice(self, action, dev=None, callerWaitingForResult=None):
+		body_params = action.get("body_params", indigo.Dict())
+		device_id   = body_params.get("deviceId", "")
+		pairing_id  = body_params.get("pairingId", "")
+
+		android_dev  = indigo.devices[int(device_id)]
+		plugin_props = android_dev.pluginProps
+
+		if plugin_props.get("deviceRegistrationId", "") == pairing_id:
+			plugin_props["deviceRegistrationId"] = ""
+			android_dev.replacePluginPropsOnServer(plugin_props)
+			android_dev.updateStateOnServer("isPaired", False, uiValue="Not Paired")
+			command_response = "OK"
+			indigo.server.log(f"Successfully un-aired Android device to Indigo Device {device_id}")
+		else:
+			indigo.server.log("Rejected device un-pairing request - Indigo Device not paired to device making the request", isError=True)
+			command_response = "ERROR: Exception Processing Request"
+
+		return {"status": 200, "content": command_response}
