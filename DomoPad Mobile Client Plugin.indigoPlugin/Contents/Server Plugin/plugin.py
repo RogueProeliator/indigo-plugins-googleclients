@@ -274,7 +274,7 @@ class Plugin(RPFrameworkPlugin):
 	# API call that allows the Android client to register itself against a specific Indigo
 	# Android device
 	# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	def registerAndroidDevice(self, action, dev=None, callerWaitingForResult = None):
+	def register_android_device(self, action, dev=None, callerWaitingForResult = None):
 		body_params     = action.get("body_params", indigo.Dict())
 		device_id       = body_params.get("deviceId", "")
 		pairing_id      = body_params.get("pairingId", "")
@@ -298,7 +298,7 @@ class Plugin(RPFrameworkPlugin):
 
 		return {"status": 200, "content": command_response}
 
-	def unregisterAndroidDevice(self, action, dev=None, callerWaitingForResult=None):
+	def unregister_android_device(self, action, dev=None, callerWaitingForResult=None):
 		body_params = action.get("body_params", indigo.Dict())
 		device_id   = body_params.get("deviceId", "")
 		pairing_id  = body_params.get("pairingId", "")
