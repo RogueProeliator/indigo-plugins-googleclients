@@ -275,45 +275,57 @@ class Plugin(RPFrameworkPlugin):
 	# Android device
 	# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	def register_android_device(self, action, dev=None, callerWaitingForResult = None):
-		body_params     = action.get("body_params", indigo.Dict())
-		device_id       = body_params.get("deviceId", "")
-		pairing_id      = body_params.get("pairingId", "")
-		allow_overwrite = int(body_params.get("allowOverwrite", 0))
+		try:
+			body_params = action.props.get("body_params", None)
+			if body_params is None:
+				body_params = action.props.get("url_query_args", indigo.Dict())
 
-		if device_id == "" or pairing_id == "":
-			return {"status": 400}
+			device_id       = body_params.get("deviceId", "")
+			pairing_id      = body_params.get("pairingId", "")
+			allow_overwrite = int(body_params.get("allowOverwrite", 0))
 
-		android_dev  = indigo.devices[int(device_id)]
-		plugin_props = android_dev.pluginProps
+			if device_id == "" or pairing_id == "":
+				return {"status": 400}
 
-		if plugin_props.get("deviceRegistrationId", "") == "" or allow_overwrite == 1:
-			plugin_props["deviceRegistrationId"] = pairing_id
-			android_dev.replacePluginPropsOnServer(plugin_props)
-			android_dev.updateStateOnServer("isPaired", True, uiValue="Paired")
-			command_response = "OK"
-			indigo.server.log(f"Successfully paired Android device to Indigo Device {device_id}")
-		else:
-			indigo.server.log("Rejected device pairing - Indigo Device already paired to another Android device.", isError=True)
-			command_response = "ERROR: Exception Processing Request"
+			android_dev  = indigo.devices[int(device_id)]
+			plugin_props = android_dev.pluginProps
 
-		return {"status": 200, "content": command_response}
+			if plugin_props.get("deviceRegistrationId", "") == "" or allow_overwrite == 1:
+				plugin_props["deviceRegistrationId"] = pairing_id
+				android_dev.replacePluginPropsOnServer(plugin_props)
+				android_dev.updateStateOnServer("isPaired", True, uiValue="Paired")
+				command_response = "OK"
+				indigo.server.log(f"Successfully paired Android device to Indigo Device {device_id}")
+			else:
+				indigo.server.log("Rejected device pairing - Indigo Device already paired to another Android device.", isError=True)
+				command_response = "ERROR: Exception Processing Request"
+
+			return {"status": 200, "content": command_response}
+		except Exception as ex:
+			return {"status": 500, "content": f"{ex}"}
 
 	def unregister_android_device(self, action, dev=None, callerWaitingForResult=None):
-		body_params = action.get("body_params", indigo.Dict())
-		device_id   = body_params.get("deviceId", "")
-		pairing_id  = body_params.get("pairingId", "")
+		try:
+			body_params = action.props.get("body_params", None)
+			if body_params is None:
+				body_params = action.props.get("url_query_args", indigo.Dict())
 
-		android_dev  = indigo.devices[int(device_id)]
-		plugin_props = android_dev.pluginProps
+			device_id   = body_params.get("deviceId", "")
+			pairing_id  = body_params.get("pairingId", "")
 
-		if plugin_props.get("deviceRegistrationId", "") == pairing_id:
-			plugin_props["deviceRegistrationId"] = ""
-			android_dev.replacePluginPropsOnServer(plugin_props)
-			android_dev.updateStateOnServer("isPaired", False, uiValue="Not Paired")
-			command_response = "OK"
-			indigo.server.log(f"Successfully un-aired Android device to Indigo Device {device_id}")
-		else:
-			indigo.server.log("Rejected device un-pairing request - Indigo Device not paired to device making the request", isError=True)
-			command_response = "ERROR: Exception Processing Request"
+			android_dev  = indigo.devices[int(device_id)]
+			plugin_props = android_dev.pluginProps
 
-		return {"status": 200, "content": command_response}
+			if plugin_props.get("deviceRegistrationId", "") == pairing_id:
+				plugin_props["deviceRegistrationId"] = ""
+				android_dev.replacePluginPropsOnServer(plugin_props)
+				android_dev.updateStateOnServer("isPaired", False, uiValue="Not Paired")
+				command_response = "OK"
+				indigo.server.log(f"Successfully un-aired Android device to Indigo Device {device_id}")
+			else:
+				indigo.server.log("Rejected device un-pairing request - Indigo Device not paired to device making the request", isError=True)
+				command_response = "ERROR: Exception Processing Request"
+
+			return {"status": 200, "content": command_response}
+		except Exception as ex:
+			return {"status": 500, "content": f"{ex}"}
