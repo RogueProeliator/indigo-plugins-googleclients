@@ -226,6 +226,14 @@ class Plugin(RPFrameworkPlugin):
 			self.logger.exception('Failed to update published device properties')
 		return valuesDict
 
+	# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	# When called, clears the current device pairing ID, disabling push notification and
+	# updates from the old device
+	# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	def clearDevicePairing(self, valuesDict, typeId, devId):
+		valuesDict["deviceRegistrationId"] = ""
+		return valuesDict
+
 	#/////////////////////////////////////////////////////////////////////////////////////
 	# API Action Handlers
 	#/////////////////////////////////////////////////////////////////////////////////////
@@ -255,42 +263,24 @@ class Plugin(RPFrameworkPlugin):
 		
 		return f'{{ "result": "{isSuccess}", "message": "{message}" }}'
 
-	#/////////////////////////////////////////////////////////////////////////////////////
-	# Utility Routines
-	#/////////////////////////////////////////////////////////////////////////////////////		
-	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	# Processes the user requesting that the Google Home Graph re-sync the set of
-	# published devices
-	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	def requestResyncWithGoogle(self):
-		# simply schedule a resynchronization request with the background processor
-		self.logger.info('Scheduling re-synchronization request with Google Home/Assistant')
-		self.pluginCommandQueue.put(RPFramework.RPFrameworkCommand.RPFrameworkCommand(GOOGLEHOME_REQUESTSYNC))
-
-	# /////////////////////////////////////////////////////////////////////////////////////
-	# HTTP API Requests
-	# /////////////////////////////////////////////////////////////////////////////////////
 	# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	# API call that allows the Android client to register itself against a specific Indigo
 	# Android device
 	# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	def register_android_device(self, action, dev=None, callerWaitingForResult = None):
+	def register_android_device(self, action, dev=None, callerWaitingForResult=None):
 		try:
-			body_params = action.props.get("body_params", None)
-			if body_params is None:
-				body_params = action.props.get("url_query_args", indigo.Dict())
-
-			device_id       = body_params.get("deviceId", "")
-			pairing_id      = body_params.get("pairingId", "")
-			allow_overwrite = int(body_params.get("allowOverwrite", 0))
+			body_params = action.props["body_params"] if "body_params" in action.props else action.props["url_query_args"]
+			device_id = body_params.get("deviceId", "")
+			pairing_id = body_params.get("pairingId", "")
+			overwrite = int(body_params.get("allowOverwrite", 0))
 
 			if device_id == "" or pairing_id == "":
-				return {"status": 400}
+				return {"status": 400, "content": "Invalid or missing parameters supplied to pairing request"}
 
-			android_dev  = indigo.devices[int(device_id)]
+			android_dev = indigo.devices[int(device_id)]
 			plugin_props = android_dev.pluginProps
 
-			if plugin_props.get("deviceRegistrationId", "") == "" or allow_overwrite == 1:
+			if plugin_props.get("deviceRegistrationId", "") == "" or overwrite == 1:
 				plugin_props["deviceRegistrationId"] = pairing_id
 				android_dev.replacePluginPropsOnServer(plugin_props)
 				android_dev.updateStateOnServer("isPaired", True, uiValue="Paired")
@@ -304,16 +294,16 @@ class Plugin(RPFrameworkPlugin):
 		except Exception as ex:
 			return {"status": 500, "content": f"{ex}"}
 
+	# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	# API call that allows the Android client to de-register itself against a device
+	# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	def unregister_android_device(self, action, dev=None, callerWaitingForResult=None):
 		try:
-			body_params = action.props.get("body_params", None)
-			if body_params is None:
-				body_params = action.props.get("url_query_args", indigo.Dict())
+			body_params = action.props["body_params"] if "body_params" in action.props else action.props["url_query_args"]
+			device_id = body_params.get("deviceId", "")
+			pairing_id = body_params.get("pairingId", "")
 
-			device_id   = body_params.get("deviceId", "")
-			pairing_id  = body_params.get("pairingId", "")
-
-			android_dev  = indigo.devices[int(device_id)]
+			android_dev = indigo.devices[int(device_id)]
 			plugin_props = android_dev.pluginProps
 
 			if plugin_props.get("deviceRegistrationId", "") == pairing_id:
@@ -329,3 +319,15 @@ class Plugin(RPFrameworkPlugin):
 			return {"status": 200, "content": command_response}
 		except Exception as ex:
 			return {"status": 500, "content": f"{ex}"}
+
+	#/////////////////////////////////////////////////////////////////////////////////////
+	# Utility Routines
+	#/////////////////////////////////////////////////////////////////////////////////////		
+	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	# Processes the user requesting that the Google Home Graph re-sync the set of
+	# published devices
+	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	def requestResyncWithGoogle(self):
+		# simply schedule a resynchronization request with the background processor
+		self.logger.info('Scheduling re-synchronization request with Google Home/Assistant')
+		self.pluginCommandQueue.put(RPFramework.RPFrameworkCommand.RPFrameworkCommand(GOOGLEHOME_REQUESTSYNC))
