@@ -320,6 +320,39 @@ class Plugin(RPFrameworkPlugin):
 		except Exception as ex:
 			return {"status": 500, "content": f"{ex}"}
 
+	# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	# API call allowing a client to update its status (battery, location, etc.)
+	# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	def update_client_status(self, action, dev=None, callerWaitingForResult=None):
+		body_params    = action.props["body_params"] if "body_params" in action.props else action.props["url_query_args"]
+		pairing_id     = body_params.get("pairingId", "")
+		device_model   = body_params.get("deviceModel", "")
+		battery_status = body_params.get("batteryStatus", "")
+		battery_level  = int(body_params.get("batteryLevel", "0"))
+		longitude      = body_params.get("longitude", "")
+		latitude       = body_params.get("latitude", "")
+		location_time  = body_params.get("locationFixTime")
+
+		# we need to find the proper devices based upon the pairing id; the default response will be
+		# that the device was not found
+		command_response = "ERROR: Device not found"
+		dev_iter = indigo.devices.iter(filter="com.duncanware.domoPadMobileClient.domoPadAndroidClient")
+		for dev in dev_iter:
+			if dev.pluginProps.get('deviceRegistrationId', '') == pairing_id:
+				updated_states = [
+					{"modelName": device_model},
+					{"batteryStatus": battery_status},
+					{"batteryLevel": battery_level},
+					{"longitude": longitude},
+					{"latitude": latitude},
+					{"locationFixTime": location_time}
+				]
+				dev.updateStatesOnServer(updated_states)
+				command_response = "OK"
+
+		if command_response != "OK":
+			indigo.server.log(f"Received status update for unknown device with Pairing ID: {pairingId}", isError=True)
+
 	#/////////////////////////////////////////////////////////////////////////////////////
 	# Utility Routines
 	#/////////////////////////////////////////////////////////////////////////////////////		
