@@ -101,7 +101,88 @@ class Plugin(RPFrameworkPlugin):
 			except Exception:
 				self.logger.exception('Failed to request that device definitions re-synchronize with Google Home/Assistant')
 
-	#/////////////////////////////////////////////////////////////////////////////////////	
+	# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	# This routine will process the Send Notification action... it will queue up the
+	# command for the plugin to process asynchronously
+	# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	def processSendNotification(self, action):
+		rp_device        = self.managedDevices[action.deviceId]
+		registration_id  = rp_device.indigoDevice.pluginProps.get("deviceRegistrationId", "")
+		message          = self.substitute(action.props.get("message"))
+		importance_level = action.props.get("importanceLevel")
+
+		action1_name  = action.props.get("action1Name" , "")
+		action1_group = action.props.get("action1Group", "")
+		action2_name  = action.props.get("action2Name" , "")
+		action2_group = action.props.get("action2Group", "")
+
+		if registration_id == "":
+			indigo.server.log(f"Unable to send push notification to {rp_device.indigoDevice.deviceId}; the device is not paired.", isError=True)
+		else:
+			self.logDebugMessage(f"Queuing push notification command for {action.deviceId}", RPFramework.RPFrameworkPlugin.DEBUGLEVEL_HIGH)
+			self.pluginCommandQueue.put(RPFramework.RPFrameworkCommand.RPFrameworkCommand(DOMOPADCOMMAND_SENDNOTIFICATION, commandPayload=(
+				registration_id, message, importance_level, action1_name, action1_group, action2_name, action2_group)))
+
+	# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	# This routine is called whenever the user has clicked to clear his/her selection of
+	# an action in slot 1
+	# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	def clearNotificationAction1(self, valuesDict, typeId, devId):
+		valuesDict["action1Name"]  = ""
+		valuesDict["action1Group"] = ""
+		return valuesDict
+
+	# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	# This routine is called whenever the user has clicked to clear his/her selection of
+	# an action in slot 2
+	# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	def clearNotificationAction2(self, valuesDict, typeId, devId):
+		valuesDict["action2Name"] = ""
+		valuesDict["action2Group"] = ""
+		return valuesDict
+
+	# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	# This routine will send the Speak Announcement command to an Android Device
+	# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	def processSpeakAnnouncementNotification(self, action):
+		rp_device = self.managedDevices[action.deviceId]
+		device_registration_id = rp_device.indigoDevice.pluginProps.get("deviceRegistrationId", "")
+		announcement_msg = action.props.get("announcement", "")
+
+		if device_registration_id == "":
+			self.logger.error(f"Unable to send speak announcement request notification to {rp_device.indigoDevice.deviceId}; the device is not paired.")
+		elif announcement_msg == "":
+			self.logger.error(f"Unable to send speak announcement request notification to {rp_device.indigoDevice.deviceId}; no announcement text was entered.")
+		else:
+			self.logger.threaddebug("Queuing peak announcement request notification command for {action.deviceId}")
+			self.pluginCommandQueue.put(RPFramework.RPFrameworkCommand.RPFrameworkCommand(DOMOPADCOMMAND_SPEAKANNOUNCEMENTNOTIFICATION, commandPayload=(device_registration_id, announcement_msg, rp_device)))
+
+	# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	# This routine will send the Control Page Display Command to a Android device (in
+	# order to request that a specific control page be shown on the device)
+	# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	def processControlPageDisplayNotification(self, action):
+		rp_device = self.managedDevices[action.deviceId]
+		device_registration_id = rp_device.indigoDevice.pluginProps.get("deviceRegistrationId", "")
+		control_page_id = int(action.props.get("controlPageId", "0"))
+
+		if device_registration_id == "":
+			self.logger.error(f"Unable to send control page display request notification to {rp_device.indigoDevice.deviceId}; the device is not paired.")
+		elif control_page_id <= 0:
+			self.logger.error(f"Unable to send control page display request notification to {rp_device.indigoDevice.deviceId}; no control page was selected.")
+		else:
+			self.logger.threaddebug(f"Queuing control page display request notification command for {action.deviceId}")
+			self.pluginCommandQueue.put(RPFramework.RPFrameworkCommand.RPFrameworkCommand(DOMOPADCOMMAND_CPDISPLAYNOTIFICATION, commandPayload=(device_registration_id, control_page_id)))
+
+		# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+		# This routine will send the Update Device Status request notification in order to ask
+		# the device to update its status immediately (instead of waiting for its normal 15
+		# minute update interval)
+		# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+		def processRequestDeviceStatusNotification(self, action):
+			requestDeviceStatusNotification(action.deviceId)
+
+	#/////////////////////////////////////////////////////////////////////////////////////
 	# Plugin Event Overrides
 	#/////////////////////////////////////////////////////////////////////////////////////	
 	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -241,27 +322,30 @@ class Plugin(RPFrameworkPlugin):
 	# Sets the Setpoint of a thermostat using the current thermostat mode (heating or
 	# cooling)
 	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	def apiSetThermostatSetpoint(self, action, dev=None, callerWaitingForResult=None):
-		deviceId    = int(action.props["body_params"].get('deviceId', '0'))
-		newSetpoint = float(action.props["body_params"].get('setpoint', '0.0'))
-		isSuccess   = False
-		message     = ''
+	def set_thermostat_setpoint(self, action, dev=None, callerWaitingForResult=None):
+		try:
+			device_id    = int(action.props["body_params"].get('deviceId', '0'))
+			new_setpoint = float(action.props["body_params"].get('setpoint', '0.0'))
+			is_success   = False
+			message      = ''
 
-		if deviceId == 0 or newSetpoint == 0.0:
-			self.logger.warning('Unable to process API request to set thermostat setpoint due to missing or invalid arguments')
-			message = 'Unable to process API request to set thermostat setpoint due to missing or invalid arguments'
-		else:
-			device = indigo.devices[deviceId]
-			if device.hvacMode == indigo.kHvacMode.HeatCool or device.hvacMode == indigo.kHvacMode.ProgramHeatCool or device.hvacMode == indigo.kHvacMode.Cool or device.hvacMode == indigo.kHvacMode.ProgramCool:
-				indigo.thermostat.setCoolSetpoint(deviceId, value=newSetpoint)
-				isSuccess = True
-			elif device.hvacMode == indigo.kHvacMode.Heat or device.hvacMode == indigo.kHvacMode.ProgramHeat:
-				indigo.thermostat.setHeatSetpoint(deviceId, value=newSetpoint)
-				isSuccess = True
+			if device_id == 0 or new_setpoint == 0.0:
+				self.logger.warning('Unable to process API request to set thermostat setpoint due to missing or invalid arguments')
+				message = 'Unable to process API request to set thermostat setpoint due to missing or invalid arguments'
 			else:
-				message = 'Thermostat is off or not in a mode that accepts setpoint changes'
-		
-		return f'{{ "result": "{isSuccess}", "message": "{message}" }}'
+				device = indigo.devices[device_id]
+				if device.hvacMode == indigo.kHvacMode.HeatCool or device.hvacMode == indigo.kHvacMode.ProgramHeatCool or device.hvacMode == indigo.kHvacMode.Cool or device.hvacMode == indigo.kHvacMode.ProgramCool:
+					indigo.thermostat.setCoolSetpoint(device_id, value=new_setpoint)
+					is_success = True
+				elif device.hvacMode == indigo.kHvacMode.Heat or device.hvacMode == indigo.kHvacMode.ProgramHeat:
+					indigo.thermostat.setHeatSetpoint(device_id, value=new_setpoint)
+					is_success = True
+				else:
+					message = 'Thermostat is off or not in a mode that accepts setpoint changes'
+
+			return f'{{ "result": "{is_success}", "message": "{message}" }}'
+		except Exception as ex:
+			self.logger.exception(f"Failed to set thermostat set point via API: {ex}")
 
 	# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	# API call that allows the Android client to register itself against a specific Indigo
@@ -292,6 +376,7 @@ class Plugin(RPFrameworkPlugin):
 
 			return {"status": 200, "content": command_response}
 		except Exception as ex:
+			self.logger.error("Failed to register android device via API")
 			return {"status": 500, "content": f"{ex}"}
 
 	# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -318,40 +403,46 @@ class Plugin(RPFrameworkPlugin):
 
 			return {"status": 200, "content": command_response}
 		except Exception as ex:
+			self.logger.error("Unable to de-register Android device via API")
 			return {"status": 500, "content": f"{ex}"}
 
 	# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	# API call allowing a client to update its status (battery, location, etc.)
 	# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	def update_client_status(self, action, dev=None, callerWaitingForResult=None):
-		body_params    = action.props["body_params"] if "body_params" in action.props else action.props["url_query_args"]
-		pairing_id     = body_params.get("pairingId", "")
-		device_model   = body_params.get("deviceModel", "")
-		battery_status = body_params.get("batteryStatus", "")
-		battery_level  = int(body_params.get("batteryLevel", "0"))
-		longitude      = body_params.get("longitude", "")
-		latitude       = body_params.get("latitude", "")
-		location_time  = body_params.get("locationFixTime")
+		try:
+			body_params    = action.props["body_params"] if "body_params" in action.props else action.props["url_query_args"]
+			pairing_id     = body_params.get("pairingId", "")
+			device_model   = body_params.get("deviceModel", "")
+			battery_status = body_params.get("batteryStatus", "")
+			battery_level  = int(body_params.get("batteryLevel", "0"))
+			longitude      = body_params.get("longitude", "")
+			latitude       = body_params.get("latitude", "")
+			location_time  = body_params.get("locationFixTime")
 
-		# we need to find the proper devices based upon the pairing id; the default response will be
-		# that the device was not found
-		command_response = "ERROR: Device not found"
-		dev_iter = indigo.devices.iter(filter="com.duncanware.domoPadMobileClient.domoPadAndroidClient")
-		for dev in dev_iter:
-			if dev.pluginProps.get('deviceRegistrationId', '') == pairing_id:
-				updated_states = [
-					{"modelName": device_model},
-					{"batteryStatus": battery_status},
-					{"batteryLevel": battery_level},
-					{"longitude": longitude},
-					{"latitude": latitude},
-					{"locationFixTime": location_time}
-				]
-				dev.updateStatesOnServer(updated_states)
-				command_response = "OK"
+			# we need to find the proper devices based upon the pairing id; the default response will be
+			# that the device was not found
+			command_response = "ERROR: Device not found"
+			dev_iter = indigo.devices.iter(filter="com.duncanware.domoPadMobileClient.domoPadAndroidClient")
+			for dev in dev_iter:
+				if dev.pluginProps.get('deviceRegistrationId', '') == pairing_id:
+					updated_states = [
+						{"modelName": device_model},
+						{"batteryStatus": battery_status},
+						{"batteryLevel": battery_level},
+						{"longitude": longitude},
+						{"latitude": latitude},
+						{"locationFixTime": location_time}
+					]
+					dev.updateStatesOnServer(updated_states)
+					command_response = "OK"
 
-		if command_response != "OK":
-			indigo.server.log(f"Received status update for unknown device with Pairing ID: {pairingId}", isError=True)
+			if command_response != "OK":
+				self.logger.error(f"Received status update for unknown device with Pairing ID: {pairing_id}")
+			return {"status": 200, "content": command_response}
+		except Exception as ex:
+			self.logger.error("Failed to update mobile client status via API")
+			return {"status": 500, "content": f"Failed to update mobile client status: {ex}"}
 
 	#/////////////////////////////////////////////////////////////////////////////////////
 	# Utility Routines

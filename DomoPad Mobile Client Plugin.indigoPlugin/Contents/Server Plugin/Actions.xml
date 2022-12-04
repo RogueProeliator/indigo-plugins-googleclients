@@ -99,7 +99,7 @@
     <!-- API Actions... Not published in the UI -->
     <Action id="set_thermostat_setpoint" uiPath="hidden">
         <Name>Set Thermostat Setpoint</Name>
-        <CallbackMethod>apiSetThermostatSetpoint</CallbackMethod>
+        <CallbackMethod>set_thermostat_setpoint</CallbackMethod>
     </Action>
 	<Action id="registerAndroidDevice" uiPath="hidden">
 		<Name>Register Android Device</Name>
@@ -108,5 +108,9 @@
 	<Action id="unregisterAndroidDevice" uiPath="hidden">
 		<Name>Un-Register Android Device</Name>
 		<CallbackMethod>unregister_android_device</CallbackMethod>
+	</Action>
+	<Action id="updateAndroidDeviceStates" uiPath="hidden">
+		<Name>Update Android Device State</Name>
+		<CallbackMethod>update_client_status</CallbackMethod>
 	</Action>
 </Actions>
