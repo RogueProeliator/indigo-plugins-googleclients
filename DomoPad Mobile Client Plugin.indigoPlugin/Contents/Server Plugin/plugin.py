@@ -473,12 +473,12 @@ class Plugin(RPFrameworkPlugin):
 			for dev in dev_iter:
 				if dev.pluginProps.get('deviceRegistrationId', '') == pairing_id:
 					updated_states = [
-						{"modelName": device_model},
-						{"batteryStatus": battery_status},
-						{"batteryLevel": battery_level},
-						{"longitude": longitude},
-						{"latitude": latitude},
-						{"locationFixTime": location_time}
+						{"key": "modelName", "value": device_model},
+						{"key": "batteryStatus", "value": battery_status},
+						{"key": "batteryLevel", "value": battery_level},
+						{"key": "longitude", "value": longitude},
+						{"key": "latitude", "value": latitude},
+						{"key": "locationFixTime", "value": location_time}
 					]
 					dev.updateStatesOnServer(updated_states)
 					command_response = "OK"
@@ -487,7 +487,7 @@ class Plugin(RPFrameworkPlugin):
 				self.logger.error(f"Received status update for unknown device with Pairing ID: {pairing_id}")
 			return {"status": 200, "content": command_response}
 		except Exception as ex:
-			self.logger.error("Failed to update mobile client status via API")
+			self.logger.exception("Failed to update mobile client status via API")
 			return {"status": 500, "content": f"Failed to update mobile client status: {ex}"}
 
 	#/////////////////////////////////////////////////////////////////////////////////////
