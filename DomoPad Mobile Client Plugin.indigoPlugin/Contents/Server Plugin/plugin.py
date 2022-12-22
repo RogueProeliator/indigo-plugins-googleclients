@@ -162,7 +162,23 @@ class Plugin(RPFrameworkPlugin):
 			except:
 				self.logger.exception("Error sending control page display request")
 
-		# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+		elif rpCommand.commandName == DOMOPADCOMMAND_DEVICEUPDATEREQUESTNOTIFICATION:
+			self.logger.threaddebug(f"Device Status Update Request: Device Id={rpCommand.commandPayload}")
+			query_string_params = {"devicePairingId": rpCommand.commandPayload}
+
+			api_endpoint_url = "https://com-duncanware-domopad.appspot.com/_ah/api/messaging/v1/sendDeviceStatusUpdateRequest"
+			try:
+				response = requests.post(api_endpoint_url, data=json.dumps(query_string_params))
+				self.logger.threaddebug(f"Device Status Update Request Response: [{response.status_code}] {response.text}")
+
+				if response.status_code == 204:
+					self.logger.debug("Device status update request sent successfully")
+				else:
+					self.logger.error("Error sending device status update request")
+			except:
+				self.logger.exception("Error requesting device status update")
+
+	# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	# This routine will process the Send Notification action... it will queue up the
 	# command for the plugin to process asynchronously
 	# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -240,9 +256,15 @@ class Plugin(RPFrameworkPlugin):
 	# the device to update its status immediately (instead of waiting for its normal 15
 	# minute update interval)
 	# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	def processRequestDeviceStatusNotification(self, action):
-		#requestDeviceStatusNotification(action.deviceId)
-		pass
+	def request_device_status_update(self, action):
+		rp_device = self.managedDevices[action.deviceId]
+		device_registration_id = rp_device.indigoDevice.pluginProps.get("deviceRegistrationId", "")
+
+		if device_registration_id == "":
+			self.logger.error(f"Unable to send status update request to {rp_device.indigoDevice.deviceId}; the device is not paired.")
+		else:
+			self.logger.threaddebug(f"Queuing device status update request notification command for {action.deviceId}")
+			self.pluginCommandQueue.put(RPFrameworkCommand(DOMOPADCOMMAND_DEVICEUPDATEREQUESTNOTIFICATION, commandPayload=device_registration_id))
 
 	#/////////////////////////////////////////////////////////////////////////////////////
 	# Plugin Event Overrides

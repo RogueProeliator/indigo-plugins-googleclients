@@ -93,7 +93,7 @@
 	</Action>
 	<Action id="sendUpdateStatusRequestNotification" uiPath="DeviceActions" deviceFilter="self.domoPadAndroidClient">
 		<Name>Request Status from Device</Name>
-		<CallbackMethod>processRequestDeviceStatusNotification</CallbackMethod>
+		<CallbackMethod>request_device_status_update</CallbackMethod>
 	</Action>
 
     <!-- API Actions... Not published in the UI -->
