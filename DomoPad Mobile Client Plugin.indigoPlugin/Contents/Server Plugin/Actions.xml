@@ -2,7 +2,7 @@
 <Actions>
 	<Action id="sendPushNotification" uiPath="DeviceActions" deviceFilter="self.domoPadAndroidClient">
 		<Name>Send Push Notification Message</Name>
-		<CallbackMethod>processSendNotification</CallbackMethod>
+		<CallbackMethod>process_send_notification</CallbackMethod>
 		<ConfigUI>
 			<Field id="notificationMessageTitle" type="label" fontColor="darkGray">
 				<Label>NOTIFICATION MESSAGE</Label>
@@ -42,7 +42,7 @@
 			<Field id="clearAction1" type="button">
 				<Label></Label>
 				<Title>Clear</Title>
-				<CallbackMethod>clearNotificationAction1</CallbackMethod>
+				<CallbackMethod>clear_notification_action_1</CallbackMethod>
 			</Field>
 			<Field id="action2Name" type="textfield">
 				<Label>Action 2 (Button Text):</Label>
@@ -54,13 +54,13 @@
 			<Field id="clearAction2" type="button">
 				<Label></Label>
 				<Title>Clear</Title>
-				<CallbackMethod>clearNotificationAction2</CallbackMethod>
+				<CallbackMethod>clear_notification_action_2</CallbackMethod>
 			</Field>
 		</ConfigUI>
 	</Action>
 	<Action id="sendSpeakAnnouncementNotification" uiPath="DeviceActions" deviceFilter="self.domoPadAndroidClient">
 		<Name>Send Speak Announcement Command</Name>
-		<CallbackMethod>processSpeakAnnouncementNotification</CallbackMethod>
+		<CallbackMethod>process_speak_announcement_notification</CallbackMethod>
 		<ConfigUI>
 			<Field id="cpNotificationMessageTitle" type="label" fontColor="darkGray">
 				<Label>SPEAK ANNOUNCEMENT COMMAND</Label>
@@ -76,7 +76,7 @@
 	</Action>
 	<Action id="sendControlPageDisplayNotification" uiPath="DeviceActions" deviceFilter="self.domoPadAndroidClient">
 		<Name>Send Control Page Display Command</Name>
-		<CallbackMethod>processControlPageDisplayNotification</CallbackMethod>
+		<CallbackMethod>process_control_page_display_notification</CallbackMethod>
 		<ConfigUI>
 			<Field id="cpNotificationMessageTitle" type="label" fontColor="darkGray">
 				<Label>CONTROL PAGE DISPLAY COMMAND</Label>

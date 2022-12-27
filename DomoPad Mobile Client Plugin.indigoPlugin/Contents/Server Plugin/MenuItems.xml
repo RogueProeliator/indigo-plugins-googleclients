@@ -8,8 +8,8 @@
 			</Field>
 			<Field id="publishedDevice" type="menu" dynamicReload="true">
 				<Label>Device:</Label>
-				<List class="self" method="getGoogleHomeDeviceList" />
-				<CallbackMethod>publishedHomeDeviceSelected</CallbackMethod>
+				<List class="self" method="get_google_home_device_list" />
+				<CallbackMethod>published_home_device_selected</CallbackMethod>
 			</Field>
 			<Field id="simpleSeparator0" type="separator" />
 			<Field id="enableDeviceDetailUI" type="checkbox" defaultValue="false" hidden="yes" />
@@ -19,7 +19,7 @@
 			</Field>
 			<Field id="deviceDetailsPublishedType" type="menu" enabledBindingId="enableDeviceDetailUI">
 				<Label>Type:</Label>
-				<List class="self" method="getGoogleDeviceTypes" dynamicReload="true" />
+				<List class="self" method="get_google_device_types" dynamicReload="true" />
 			</Field>
 			<Field id="deviceTypeInstructions" type="label" fontSize="small" alignWithControl="True">
 				<Label>We've selected the subtype that we believe is the most appropriate for your device. However, you can change that here. This will determine how you control it via the Assistant and how it appears in the Google Home app.</Label>
@@ -44,7 +44,7 @@
 			</Field>
 			<Field id="deviceDetailsSaveChanges" type="button" enabledBindingId="enableDeviceDetailUI">
 				<Title>Save</Title>
-				<CallbackMethod>publishedHomeDevicesUpdate</CallbackMethod>
+				<CallbackMethod>published_home_devices_update</CallbackMethod>
 			</Field>
 			<Field id="saveChangesWarning" type="label" fontSize="small" fontColor="orange" alignWithControl="True">
 				<Label>NOTE: changes are not saved if you switch devices or close this dialog without saving first.</Label>
@@ -53,17 +53,17 @@
 	</MenuItem>
 	<MenuItem id="requestResync">
 		<Name>Re-Synchronize Devices with Google</Name>
-		<CallbackMethod>requestResyncWithGoogle</CallbackMethod>
+		<CallbackMethod>request_resync_with_google</CallbackMethod>
 	</MenuItem>
 
 	<MenuItem id="debugSectionSeparator" />
     <MenuItem id="toggleDebug">
 		<Name>Toggle Debugging On/Off</Name>
-		<CallbackMethod>toggleDebugEnabled</CallbackMethod>
+		<CallbackMethod>toggle_debug_enabled</CallbackMethod>
 	</MenuItem>
 	<MenuItem id="debugDumpDeviceDetails">
 		<Name>Log Device Details</Name>
-		<CallbackMethod>dumpDeviceDetailsToLog</CallbackMethod>
+		<CallbackMethod>dump_device_details_to_log</CallbackMethod>
 		<ButtonTitle>Output</ButtonTitle>
 		<ConfigUI>
 			<Field id="dumpDeviceDetailsToLog_Title" type="label" fontColor="darkGray">

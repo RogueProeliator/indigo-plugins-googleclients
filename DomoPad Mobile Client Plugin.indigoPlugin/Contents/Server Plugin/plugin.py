@@ -1,14 +1,13 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 #/////////////////////////////////////////////////////////////////////////////////////////
-# Domotics Pad Client Plugin by RogueProeliator <rp@rogueproeliator.com>
+# Domotics Pad Mobile Client Plugin by RogueProeliator <rp@rogueproeliator.com>
 # 	Indigo plugin designed to interface with the various Google services supported by
 #   Domotics Pad, such as mobile clients and Google Home devices
 #/////////////////////////////////////////////////////////////////////////////////////////
 
 #/////////////////////////////////////////////////////////////////////////////////////////
 #region Python imports
-from   distutils.dir_util import copy_tree
 import json
 import requests
 
@@ -82,49 +81,49 @@ class Plugin(RPFrameworkPlugin):
 	# This routine will be called to handle any unknown commands at the plugin level; it
 	# can/should be overridden in the plugin implementation (if needed)
 	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	def handleUnknownPluginCommand(self, rpCommand, reQueueCommandsList):
-		if rpCommand.commandName == GOOGLEHOME_SENDDEVICEUPDATE:
+	def handle_unknown_plugin_command(self, rp_command, requeue_commands_list):
+		if rp_command.commandName == GOOGLEHOME_SENDDEVICEUPDATE:
 			try:
-				reflectorUrl = f"{indigo.server.getReflectorURL()}/"
-				deviceUpdateXml = dicttoxml.dicttoxml(rpCommand.commandPayload, True, "Device")
-				requestBody = {"intent": "googlehomegraph.UPDATE_DEVICE", "payload": {"agentId": reflectorUrl, "deviceUpdate": deviceUpdateXml}}
-				self.logger.info('Sending ' + json.dumps(requestBody))
-				requests.post(INDIGO_SERVER_CLOUD_URL, data=json.dumps(requestBody))
+				reflector_url     = f"{indigo.server.getReflectorURL()}/"
+				device_update_xml = dicttoxml.dicttoxml(rp_command.commandPayload, True, "Device")
+				request_body      = {"intent": "googlehomegraph.UPDATE_DEVICE", "payload": {"agentId": reflector_url, "deviceUpdate": device_update_xml}}
+				self.logger.info('Sending ' + json.dumps(request_body))
+				requests.post(INDIGO_SERVER_CLOUD_URL, data=json.dumps(request_body))
 			except:
 				self.logger.exception('Failed to send device update to Google Home')
 
-		elif rpCommand.commandName == GOOGLEHOME_REQUESTSYNC:
+		elif rp_command.commandName == GOOGLEHOME_REQUESTSYNC:
 			try:
-				reflectorUrl = f"{indigo.server.getReflectorURL()}/'"
-				requestBody  = f'{{ "intent": "googlehomegraph.REQUEST_SYNC", "payload": {{ "agentId": "{reflectorUrl}" }} }}'
-				self.logger.debug(f"Sending intent to Indigo Cloud for synchronization with {reflectorUrl}")
-				requests.post(INDIGO_SERVER_CLOUD_URL, data=requestBody)
+				reflector_url = f"{indigo.server.getReflectorURL()}/'"
+				request_body  = f'{{ "intent": "googlehomegraph.REQUEST_SYNC", "payload": {{ "agentId": "{reflector_url}" }} }}'
+				self.logger.debug(f"Sending intent to Indigo Cloud for synchronization with {reflector_url}")
+				requests.post(INDIGO_SERVER_CLOUD_URL, data=request_body)
 			except:
 				self.logger.exception('Failed to request that device definitions re-synchronize with Google Home/Assistant')
 
-		elif rpCommand.commandName == DOMOPADCOMMAND_SENDNOTIFICATION:
-			self.logger.threaddebug(f"Push Notification Send Command: DevicePairID={rpCommand.commandPayload[0]}; Type={rpCommand.commandPayload[2]}; Message={rpCommand.commandPayload[1]}")
+		elif rp_command.commandName == DOMOPADCOMMAND_SENDNOTIFICATION:
+			self.logger.threaddebug(f"Push Notification Send Command: DevicePairID={rp_command.commandPayload[0]}; Type={rp_command.commandPayload[2]}; Message={rp_command.commandPayload[1]}")
 
 			# set up the defaults so that we know all the parameters have a value...
-			query_string_params = { "devicePairingId": rpCommand.commandPayload[0],
+			query_string_params = { "devicePairingId": rp_command.commandPayload[0],
 									"notificationType": "Alert",
-									"priority": rpCommand.commandPayload[2],
-									"message": f"{rpCommand.commandPayload[1]}"}
+									"priority": rp_command.commandPayload[2],
+									"message": f"{rp_command.commandPayload[1]}"}
 			query_string_params["action1Name"] = ""
 			query_string_params["action1Group"] = ""
 			query_string_params["action2Name"] = ""
 			query_string_params["action2Group"] = ""
 
 			# build the query string as it must be URL encoded
-			if rpCommand.commandPayload[3] != "" and rpCommand.commandPayload[4] != "":
-				self.logger.threaddebug(f"Push Notification Send Action 1: {rpCommand.commandPayload[3]} => {rpCommand.commandPayload[4]}")
-				query_string_params["action1Name"] = f"{rpCommand.commandPayload[3]}"
-				query_string_params["action1Group"] = f"{rpCommand.commandPayload[4]}"
+			if rp_command.commandPayload[3] != "" and rp_command.commandPayload[4] != "":
+				self.logger.threaddebug(f"Push Notification Send Action 1: {rp_command.commandPayload[3]} => {rp_command.commandPayload[4]}")
+				query_string_params["action1Name"] = f"{rp_command.commandPayload[3]}"
+				query_string_params["action1Group"] = f"{rp_command.commandPayload[4]}"
 				query_string_params["notificationType"] = "ActionAlert"
-			if rpCommand.commandPayload[5] != "" and rpCommand.commandPayload[6] != "":
-				self.logger.threaddebug(f"Push Notification Send Action 2: {rpCommand.commandPayload[5]} => {rpCommand.commandPayload[6]}")
-				query_string_params["action2Name"] = f"{rpCommand.commandPayload[5]}"
-				query_string_params["action2Group"] = f"{rpCommand.commandPayload[6]}"
+			if rp_command.commandPayload[5] != "" and rp_command.commandPayload[6] != "":
+				self.logger.threaddebug(f"Push Notification Send Action 2: {rp_command.commandPayload[5]} => {rp_command.commandPayload[6]}")
+				query_string_params["action2Name"] = f"{rp_command.commandPayload[5]}"
+				query_string_params["action2Group"] = f"{rp_command.commandPayload[6]}"
 				query_string_params["notificationType"] = "ActionAlert"
 			self.logger.threaddebug(f"Push Notification Payload={json.dumps(query_string_params)}")
 
@@ -142,13 +141,13 @@ class Plugin(RPFrameworkPlugin):
 			except:
 				self.logger.exception("Error sending push notification.")
 
-		elif rpCommand.commandName == DOMOPADCOMMAND_CPDISPLAYNOTIFICATION:
-			self.logger.threaddebug(f"Control Page Display Request Command: Id={rpCommand.commandPayload[0]}; Page={rpCommand.commandPayload[1]}")
+		elif rp_command.commandName == DOMOPADCOMMAND_CPDISPLAYNOTIFICATION:
+			self.logger.threaddebug(f"Control Page Display Request Command: Id={rp_command.commandPayload[0]}; Page={rp_command.commandPayload[1]}")
 
 			# load the control page name so that we may pass it along to the device
-			requested_page = indigo.rawServerRequest('GetControlPage', {"ID": rpCommand.commandPayload[1]})
+			requested_page = indigo.rawServerRequest('GetControlPage', {"ID": rp_command.commandPayload[1]})
 			cp_page_name   = requested_page["Name"]
-			query_string_params = {"devicePairingId": rpCommand.commandPayload[0], "pageRequested": rpCommand.commandPayload[1], "pageName": cp_page_name}
+			query_string_params = {"devicePairingId": rp_command.commandPayload[0], "pageRequested": rp_command.commandPayload[1], "pageName": cp_page_name}
 
 			api_endpoint_url = "https://com-duncanware-domopad.appspot.com/_ah/api/messaging/v1/sendControlPageDisplayRequest"
 			try:
@@ -162,9 +161,9 @@ class Plugin(RPFrameworkPlugin):
 			except:
 				self.logger.exception("Error sending control page display request")
 
-		elif rpCommand.commandName == DOMOPADCOMMAND_DEVICEUPDATEREQUESTNOTIFICATION:
-			self.logger.threaddebug(f"Device Status Update Request: Device Id={rpCommand.commandPayload}")
-			query_string_params = {"devicePairingId": rpCommand.commandPayload}
+		elif rp_command.commandName == DOMOPADCOMMAND_DEVICEUPDATEREQUESTNOTIFICATION:
+			self.logger.threaddebug(f"Device Status Update Request: Device Id={rp_command.commandPayload}")
+			query_string_params = {"devicePairingId": rp_command.commandPayload}
 
 			api_endpoint_url = "https://com-duncanware-domopad.appspot.com/_ah/api/messaging/v1/sendDeviceStatusUpdateRequest"
 			try:
@@ -182,7 +181,7 @@ class Plugin(RPFrameworkPlugin):
 	# This routine will process the Send Notification action... it will queue up the
 	# command for the plugin to process asynchronously
 	# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	def processSendNotification(self, action):
+	def process_send_notification(self, action):
 		rp_device        = self.managedDevices[action.deviceId]
 		registration_id  = rp_device.indigoDevice.pluginProps.get("deviceRegistrationId", "")
 		message          = self.substitute(action.props.get("message"))
@@ -204,7 +203,7 @@ class Plugin(RPFrameworkPlugin):
 	# This routine is called whenever the user has clicked to clear his/her selection of
 	# an action in slot 1
 	# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	def clearNotificationAction1(self, valuesDict, typeId, devId):
+	def clear_notification_action_1(self, valuesDict, typeId, devId):
 		valuesDict["action1Name"]  = ""
 		valuesDict["action1Group"] = ""
 		return valuesDict
@@ -213,7 +212,7 @@ class Plugin(RPFrameworkPlugin):
 	# This routine is called whenever the user has clicked to clear his/her selection of
 	# an action in slot 2
 	# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	def clearNotificationAction2(self, valuesDict, typeId, devId):
+	def clear_notification_action_2(self, valuesDict, typeId, devId):
 		valuesDict["action2Name"] = ""
 		valuesDict["action2Group"] = ""
 		return valuesDict
@@ -221,7 +220,7 @@ class Plugin(RPFrameworkPlugin):
 	# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	# This routine will send the Speak Announcement command to an Android Device
 	# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	def processSpeakAnnouncementNotification(self, action):
+	def process_speak_announcement_notification(self, action):
 		rp_device = self.managedDevices[action.deviceId]
 		device_registration_id = rp_device.indigoDevice.pluginProps.get("deviceRegistrationId", "")
 		announcement_msg = action.props.get("announcement", "")
@@ -232,13 +231,13 @@ class Plugin(RPFrameworkPlugin):
 			self.logger.error(f"Unable to send speak announcement request notification to {rp_device.indigoDevice.deviceId}; no announcement text was entered.")
 		else:
 			self.logger.threaddebug("Queuing peak announcement request notification command for {action.deviceId}")
-			self.pluginCommandQueue.put(RPFramework.RPFrameworkCommand.RPFrameworkCommand(DOMOPADCOMMAND_SPEAKANNOUNCEMENTNOTIFICATION, commandPayload=(device_registration_id, announcement_msg, rp_device)))
+			self.pluginCommandQueue.put(RPFrameworkCommand(DOMOPADCOMMAND_SPEAKANNOUNCEMENTNOTIFICATION, commandPayload=(device_registration_id, announcement_msg, rp_device)))
 
 	# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	# This routine will send the Control Page Display Command to a Android device (in
 	# order to request that a specific control page be shown on the device)
 	# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	def processControlPageDisplayNotification(self, action):
+	def process_control_page_display_notification(self, action):
 		rp_device = self.managedDevices[action.deviceId]
 		device_registration_id = rp_device.indigoDevice.pluginProps.get("deviceRegistrationId", "")
 		control_page_id = int(action.props.get("controlPageId", "0"))
@@ -253,8 +252,8 @@ class Plugin(RPFrameworkPlugin):
 
 	# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	# This routine will send the Update Device Status request notification in order to ask
-	# the device to update its status immediately (instead of waiting for its normal 15
-	# minute update interval)
+	# the device to update its status immediately (instead of waiting for its normal
+	# 15-minute update interval)
 	# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	def request_device_status_update(self, action):
 		rp_device = self.managedDevices[action.deviceId]
@@ -303,39 +302,38 @@ class Plugin(RPFrameworkPlugin):
 	# Retrieves the list of all indigo devices which may be published to the Google Home
 	# application; sorted by its published status
 	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	def getGoogleHomeDeviceList(self, filter="", valuesDict=None, typeId="", targetId=0):
-		publishedHomeDevices = []
-		availableHomeDevices = []
+	def get_google_home_device_list(self, filter="", valuesDict=None, typeId="", targetId=0):
+		published_home_devices = []
+		available_home_devices = []
 
 		for dev in indigo.devices:
 			if dev.sharedProps.get('googleClientPublishHome', False):
-				publishedHomeDevices.append((dev.id, dev.name))
+				published_home_devices.append((dev.id, dev.name))
 			else:
-				availableHomeDevices.append((dev.id, dev.name))
+				available_home_devices.append((dev.id, dev.name))
 
 		# build the complete list of devices
-		returnList = []
-		returnList.append((-1, "%%disabled:Devices available for publishing%%"))
-		returnList.extend(availableHomeDevices)
+		return_list = [(-1, "%%disabled:Devices available for publishing%%")]
+		return_list.extend(available_home_devices)
 
-		returnList.append((-2, u"%%separator%%"))
-		returnList.append((-3, "%%disabled:Devices already published to Google Assistant%%"))
-		returnList.extend(publishedHomeDevices)
-		return returnList
+		return_list.append((-2, u"%%separator%%"))
+		return_list.append((-3, "%%disabled:Devices already published to Google Assistant%%"))
+		return_list.extend(published_home_devices)
+		return return_list
 
 	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	# Retrieves the list of available (supported) devices types as defined by the
 	# Google Assistant
 	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	def getGoogleDeviceTypes(self, filter="", valuesDict=None, typeId="", targetId=0):
+	def get_google_device_types(self, filter="", valuesDict=None, typeId="", targetId=0):
 		if valuesDict is None:
 			return []
 			
-		publishedDeviceId = f'{valuesDict.get(u"publishedDevice", "")}'
-		if publishedDeviceId is None or publishedDeviceId == "":
+		published_device_id = f'{valuesDict.get("publishedDevice", "")}'
+		if published_device_id is None or published_device_id == "":
 			return []
 
-		device = indigo.devices.get(int(publishedDeviceId), None)
+		device = indigo.devices.get(int(published_device_id), None)
 		if device is None:
 			return []
 		else:
@@ -345,7 +343,7 @@ class Plugin(RPFrameworkPlugin):
 	# Called whenever the user has selected a device from the list of published Google
 	# Assistant devices... show the "Google" device details
 	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	def publishedHomeDeviceSelected(self, valuesDict=None, typeId="", devId=0):
+	def published_home_device_selected(self, valuesDict=None, typeId="", devId=0):
 		try:
 			device = indigo.devices.get(int(valuesDict["publishedDevice"]), None)
 
@@ -363,7 +361,7 @@ class Plugin(RPFrameworkPlugin):
 	# Called whenever the user has clicked to update the published Google Home (such as
 	# changing the device name or type)
 	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	def publishedHomeDevicesUpdate(self, valuesDict=None, typeId="", devId=0):
+	def published_home_devices_update(self, valuesDict=None, typeId="", devId=0):
 		try:
 			device      = indigo.devices.get(int(valuesDict["publishedDevice"]), None)
 			globalProps = device.sharedProps
@@ -395,9 +393,18 @@ class Plugin(RPFrameworkPlugin):
 	# When called, clears the current device pairing ID, disabling push notification and
 	# updates from the old device
 	# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	def clearDevicePairing(self, valuesDict, typeId, devId):
+	def clear_device_pairing(self, valuesDict, typeId, devId):
 		valuesDict["deviceRegistrationId"] = ""
 		return valuesDict
+
+	# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	# Processes the user requesting that the Google Home Graph re-sync the set of
+	# published devices
+	# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	def request_resync_with_google(self):
+		# simply schedule a resynchronization request with the background processor
+		self.logger.info('Scheduling re-synchronization request with Google Home/Assistant')
+		self.pluginCommandQueue.put(RPFramework.RPFrameworkCommand.RPFrameworkCommand(GOOGLEHOME_REQUESTSYNC))
 
 	#/////////////////////////////////////////////////////////////////////////////////////
 	# API Action Handlers
@@ -425,7 +432,7 @@ class Plugin(RPFrameworkPlugin):
 					indigo.thermostat.setHeatSetpoint(device_id, value=new_setpoint)
 					is_success = True
 				else:
-					message = 'Thermostat is off or not in a mode that accepts setpoint changes'
+					message = "Thermostat is off or not in a mode that accepts set point changes"
 
 			return f'{{ "result": "{is_success}", "message": "{message}" }}'
 		except Exception as ex:
@@ -527,15 +534,3 @@ class Plugin(RPFrameworkPlugin):
 		except Exception as ex:
 			self.logger.exception("Failed to update mobile client status via API")
 			return {"status": 500, "content": f"Failed to update mobile client status: {ex}"}
-
-	#/////////////////////////////////////////////////////////////////////////////////////
-	# Utility Routines
-	#/////////////////////////////////////////////////////////////////////////////////////		
-	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	# Processes the user requesting that the Google Home Graph re-sync the set of
-	# published devices
-	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	def requestResyncWithGoogle(self):
-		# simply schedule a resynchronization request with the background processor
-		self.logger.info('Scheduling re-synchronization request with Google Home/Assistant')
-		self.pluginCommandQueue.put(RPFramework.RPFrameworkCommand.RPFrameworkCommand(GOOGLEHOME_REQUESTSYNC))

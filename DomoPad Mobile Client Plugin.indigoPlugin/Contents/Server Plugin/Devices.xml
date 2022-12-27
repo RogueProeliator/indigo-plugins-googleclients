@@ -18,7 +18,7 @@
 			<Field id="selectEnumeratedDevice" type="button" enabledBindingId="deviceRegistrationId">
 				<Label></Label>
 				<Title>Clear Pairing</Title>
-				<CallbackMethod>clearDevicePairing</CallbackMethod>
+				<CallbackMethod>clear_device_pairing</CallbackMethod>
 			</Field>
 			<Field type="checkbox" id="SupportsBatteryLevel" hidden="true" defaultValue="true"/>
 		</ConfigUI>
