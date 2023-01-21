@@ -68,7 +68,7 @@ SUPPORTED_INDIGO_CLASSES = {
 # Maps an Indigo device (object) to the proper/default Google Assistant device type
 # that may be found in the types dictionary
 # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-def mapIndigoDeviceToGoogleType(device):
+def map_to_google_device_type(device):
     if isinstance(device, indigo.DimmerDevice):
         return 'action.devices.types.LIGHT'
     elif isinstance(device, indigo.RelayDevice):
@@ -85,7 +85,7 @@ def mapIndigoDeviceToGoogleType(device):
 # Maps an Indigo device (object) to the proper/default Google Assistant device type
 # that may be found in the types dictionary
 #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-def getAvailableSubtypesForDevice(device):
+def get_subtypes_for_device(device):
     try:
         subtype_meta = SUPPORTED_INDIGO_CLASSES[device.__class__]
         subtypes = [getattr(subtype_meta, a) for a in dir(subtype_meta) if not a.startswith('__')]
@@ -103,7 +103,7 @@ def getAvailableSubtypesForDevice(device):
 # Determines the sub type of a device based upon a specified sub type, a device
 # property or hints based upon device properties
 #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-def getDeviceSubType(device):
+def get_subtype(device):
     if device.__class__ not in SUPPORTED_INDIGO_CLASSES or SUPPORTED_INDIGO_CLASSES[device.__class__] is None:
         return None
 
@@ -218,7 +218,7 @@ def getDeviceSubType(device):
 # Builds a Google Device sync definition for the given device utilizing the Global Props
 # defined by the user as well as the Indigo type
 # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-def buildGoogleHomeDeviceDefinition(device):
+def build_google_device_definition(device):
     # do not check the published flag so that this routine may be used without explicit
     # options... full implementations should only pass in published devices
     global_props = device.sharedProps
@@ -226,12 +226,16 @@ def buildGoogleHomeDeviceDefinition(device):
     # retrieve the device type for the Google Assistant device
     google_dev_type = global_props.get('googleClientAsstType', '')
     if google_dev_type == '':
-        google_dev_type = mapIndigoDeviceToGoogleType(device)
+        google_dev_type = map_to_google_device_type(device)
 
     # retrieve the name of the device as defined by the user
     google_dev_name = global_props.get('googleClientAsstName', '')
     if google_dev_name == '':
         google_dev_name = device.name
+
+    # determine if we will send updates to the Google home graph
+    report_state = global_props.get('googleClientSendUpdates', False)
+    device_pin = global_props.get('googleClientPINCode', '')
 
     device_defn_dict = {
         'id': f'{device.id}',
@@ -241,27 +245,45 @@ def buildGoogleHomeDeviceDefinition(device):
             'defaultNames': [google_dev_name],
             'name': google_dev_name
         },
-        'willReportState': False,
+        'willReportState': report_state,
         'deviceInfo': {
             'manufacturer': 'Indigo',
             'model': device.model
+        },
+        'customData': {
+            'indigoDeviceType': '',
+            'pinRequired': True if device_pin else False
         }
     }
     return device_defn_dict
 
 
 # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+# Builds a response to the Google home graph requesting a full synchronization of
+# devices published
+# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+def build_google_homegraph_sync_response(published_devices):
+    devices = list()
+    for dev in published_devices:
+        try:
+            devices.append(build_google_device_definition(dev))
+        except:
+            indigo.server.log(f"Failed to generate Google device definition for id: {dev.id}")
+    return devices
+
+
+# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 # Builds the response for Google Assistant in the format required for updating the
 # Google Home Graph with the current status/state of the device provided
 # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-def buildGoogleHomeDeviceStatusUpdate(device):
+def build_google_state_update(device):
     # configuration information is found in the global properties collection
     global_props = device.sharedProps
 
     # retrieve the device type for the Google Assistant device
     google_dev_type = global_props.get('googleClientAsstType', '')
     if google_dev_type == '':
-        google_dev_type = mapIndigoDeviceToGoogleType(device)
+        google_dev_type = map_to_google_device_type(device)
 
     # the status returned depends on the traits that are defined for this
     # device (dependent upon the device type)

@@ -337,7 +337,7 @@ class Plugin(RPFrameworkPlugin):
 		if device is None:
 			return []
 		else:
-			return googleHomeDevices.getAvailableSubtypesForDevice(device)
+			return googleHomeDevices.get_subtypes_for_device(device)
 
 	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	# Called whenever the user has selected a device from the list of published Google
@@ -409,6 +409,17 @@ class Plugin(RPFrameworkPlugin):
 	#/////////////////////////////////////////////////////////////////////////////////////
 	# API Action Handlers
 	#/////////////////////////////////////////////////////////////////////////////////////
+	# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	# Handles an API from the Google Assistant Action requesting synchronization of
+	# all devices
+	# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	def google_request_sync_devices(self, action, dev=None, callerWaitingForResult=None):
+		published_home_devices = []
+		for dev in indigo.devices:
+			if dev.sharedProps.get('googleClientPublishHome', False):
+				published_home_devices.append(dev)
+		return googleHomeDevices.build_google_homegraph_sync_response(published_home_devices)
+
 	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	# Sets the Setpoint of a thermostat using the current thermostat mode (heating or
 	# cooling)
