@@ -267,8 +267,8 @@ def build_google_homegraph_sync_response(published_devices):
     for dev in published_devices:
         try:
             devices.append(build_google_device_definition(dev))
-        except:
-            indigo.server.log(f"Failed to generate Google device definition for id: {dev.id}")
+        except Exception as err:
+            indigo.server.log(f"Failed to generate Google device definition for id: {dev.id}\n{err}", isError=True)
     return devices
 
 
