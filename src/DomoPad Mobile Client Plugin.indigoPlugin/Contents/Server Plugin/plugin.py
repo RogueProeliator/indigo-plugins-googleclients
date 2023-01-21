@@ -418,7 +418,9 @@ class Plugin(RPFrameworkPlugin):
 		for dev in indigo.devices:
 			if dev.sharedProps.get('googleClientPublishHome', False):
 				published_home_devices.append(dev)
-		return googleHomeDevices.build_google_homegraph_sync_response(published_home_devices)
+
+		response_payload = googleHomeDevices.build_google_homegraph_sync_response(published_home_devices)
+		return json.dumps(response_payload)
 
 	#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	# Sets the Setpoint of a thermostat using the current thermostat mode (heating or
