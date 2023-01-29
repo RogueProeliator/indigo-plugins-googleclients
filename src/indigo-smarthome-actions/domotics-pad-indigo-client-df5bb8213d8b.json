@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "domotics-pad-indigo-client",
+  "private_key_id": "df5bb8213d8bcdb1326363b087599453234be65d",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC+HETGyV68mArm\n+lexDXybqfPFLeUpCw+IwpBiy8SnDmmA39KnztT7cvDxp1rDK56g5ysPvoGmEo2D\nxDyAliWkt9hAi1NMpfSzs+ThH4NSFKcc9JHKkAOo+UhefgS6jGULdmEf5Um3EO3v\n3/XAnEqi8J7cg3PR8kOiAbgkpnRblgQa/IcLaRTdCTTpYDc2l0ZphrtieGhgyDD+\nVjc+b+GvoL4tTrLHqQ6vKSjT9Rjkf120C52A/Km+n9k+XL5iVQjrlhezvh7CesZd\nJrrolklizWR/W3u3hBCognP+POeHLc9uURgnARkrzq/z6uOuj80Tx+ipPbU8wVGf\nwBrmm0epAgMBAAECggEAV2SJXVSOn2XJhTrJ+xM3GBv9esRJVx/FiVnfo/sGMMGY\nUG0T2p5jHCBPkNcdCyFPL6p1CizKTryyn0MjiPz82wbEe49QwKh9n+pvqemhpabm\n15G6P4MKm6/Uy9Nkexk1DhriNRZjV6uJpb6vq1ZtnQ++B6LKKFYVLzFZJEf8r2iv\nnfDZNQeGYUQNB8wYQ/c2dQCzyqpLu21RAtXjw1TooIEWBBpQ+yPLIJls0gRxvg9N\nlCBvA/zgVRaEWgHY66fDpd4UQkKSnPJr2yDeh3pv3muZzcy4LAEvqMseBypGK3xV\nTi4mW2WHw3dgrirJTJu8qNmDyeHtAsVW/WOElkZ7/QKBgQD51oB0cIPbIekeajSw\ncOrarUElfwn3Cm5FbpDdvfgqobbvAamODS4NlkqCqG3Hzaa8Gy0Qn0DCHUr8SbiR\no1+Cxic5dIeCm+mC9dgXoIudl8Mw2fAXE7ljp3/SRUIutwmC3MAYKifhG6lTcpj4\nj/YAHQlEHMSNpfrU5cQxYTLCUwKBgQDCzKR1mbDpiwsqNBPpaLVUuzMl4a4itIBo\n1BLSzusGTBdIYA//QE6uBgsajfw5uchg/PFR3TBXZ6CP9w+1ole3iThMCdfDdHzp\n7h7CEqlbOOx535rgaisFkElDaHBW7O00OCUSBd+onFNhvk9h27nrG4URVkm7Vc0x\nlAFIYQFGkwKBgEgsAuegKTcAUMuMerQNqoqJSix+ym4nATvleMvVuP73wFTC8iwq\n+obKR7P+29fAPM5SO2510stAkwzWbw8DVu/8NhCO7SZ5y7cdNdN9eVeJI8XU71p7\nRC7ZkD856qh8D69R/dv9MZAB4aRNkosba0EVIjwe41jX/eHKjiaFoZgpAoGAfsq2\njPkRZqGjDcBB6Z3G0TTbsN94+YvlPNY0vlQCM+IZEXm9T9XqoGi8l3ctYeFj5IUf\nCbrfuTRxFOOprP7S+1psc0nAz66lk5nzGT0OUJr3iMgbRdC02fU1SpPS8zFZn7Cf\nqGB8WIIP38IAZ2CeXcJW1ZcFfNL3MTr1rse9DdMCgYEA25zVuvbjGjS7u45Jazgm\ndal//f5o+3rLFQr+4Us+wDMITmMu9tMz/QxBEKyNVjTwX5E85WGJCRGSH1WRTJnm\nv7wJsYaf2q6gb+N5nhR40mY0N2mk/U0LB6YH0t1wt/42uIvspVfJFp7phaUC3L5l\nCObGGD3T9XlpyutAiuJ5xus=\n-----END PRIVATE KEY-----\n",
+  "client_email": "firebase-smart-home@domotics-pad-indigo-client.iam.gserviceaccount.com",
+  "client_id": "102854332075109926959",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-smart-home%40domotics-pad-indigo-client.iam.gserviceaccount.com"
+}

@@ -1,3 +1,6 @@
 [submodule "DomoPad Mobile Client Plugin.indigoPlugin/Contents/Server Plugin/RPFramework"]
 	path = src/DomoPad Mobile Client Plugin.indigoPlugin/Contents/Server Plugin/RPFramework
 	url = https://github.com/RogueProeliator/indigo-plugins-rpframework-src
+[submodule "tests/unit/RPTestFramework"]
+	path = tests/unit/RPTestFramework
+	url = https://github.com/RogueProeliator/indigo-plugins-rpframework-pytest
