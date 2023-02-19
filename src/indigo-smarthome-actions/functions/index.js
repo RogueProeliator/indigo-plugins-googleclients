@@ -4,10 +4,11 @@ const {smarthome}      = require('actions-on-google');
 const {google}         = require('googleapis');
 const util             = require('util');
 const admin            = require('firebase-admin');
+const webRequest       = require('got');
+const url              = require('url');
 
 // initialize Firebase
 admin.initializeApp();
-const firebaseRef       = admin.database().ref('/');
 const emulatorReflector = defineString("EMULATOR_REFLECTOR");
 const emulatorToken     = defineString("EMULATOR_TOKEN");
 
@@ -58,7 +59,7 @@ smartHomeApp.onSync(async (body, headers) => {
     // call into the Indigo server to retrieve the list of Google Home published
     // devices (using the reflector URL)
     console.log('Retrieving devices...')
-    const publishedDevices = await executeIndigoRequest(reflectorUrl, headers.authorization, 'google_home_event_sync_request', '')
+    const publishedDevices = await executeIndigoRequest(reflectorUrl, authenticationToken(headers), 'google_home_event_sync_request', '')
     console.log('Received: ' + JSON.stringify(publishedDevices));
     
     console.log('Returning devices...');
@@ -83,7 +84,7 @@ const isInEmulator = () => { return process.env.FUNCTIONS_EMULATOR === true || p
 const standardizeUrl = (url) => {
     let standardUrl = url.startsWith("http") ? url : `https://${url}`;
     if (standardUrl.endsWith("/"))
-        standardUrl = str.slice(0, -1);
+        standardUrl = standardUrl.slice(0, -1);
     return standardUrl;
 }
 
@@ -126,14 +127,14 @@ const retrieveReflectorUrlForUser = async (headers) => {
 // executes a command/request against the Google Client helper plugin, returning the result as a JSON
 // parsed object
 const executeIndigoRequest = async(reflectorUrl, authToken, commandName, payload) => {
-    var fullPath = '/message/com.duncanware.domoPadMobileClient/' + commandName
-    if (payload != '')
-        fullPath += '?' + payload
+    var fullUri = `${reflectorUrl}/message/com.duncanware.domoPadMobileClient/${commandName}`;
+                    //payload ? `?${payload}` : '';
+    var uri = url.parse(fullUri);
 
     var requestOptions = {
-        hostname: reflectorUrl,
-        port: 443,
-        path: fullPath,
+        hostname: uri.hostname,
+        port: uri.port,
+        path: uri.path,
         method: 'GET',
         headers: {
             'Authorization': authToken,
@@ -142,7 +143,7 @@ const executeIndigoRequest = async(reflectorUrl, authToken, commandName, payload
         responseType: 'json'
     };
 
-    const indigoResponse = await webRequest('https://' + reflectorUrl + fullPath, requestOptions).json();
+    const indigoResponse = await webRequest(fullUri, requestOptions).json();
     return indigoResponse;
 }
 
