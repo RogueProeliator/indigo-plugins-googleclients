@@ -50,23 +50,18 @@ exports.ping = functions.https.onRequest(async (req, res) => {
 // SMART HOME ACTIONS FUNCTIONS
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 smartHomeApp.onSync(async (body, headers) => {
-    console.log('Sync request received');
-
     // retrieve the reflector URL that is associated with this Bearer token/account
     // (we will first check caching value, then retrieve if necessary)
     const reflectorUrl = await retrieveReflectorUrlForUser(headers);
 
     // call into the Indigo server to retrieve the list of Google Home published
     // devices (using the reflector URL)
-    console.log('Retrieving devices...')
     const publishedDevices = await executeIndigoRequest(reflectorUrl, authenticationToken(headers), 'google_home_event_sync_request', '')
-    console.log('Received: ' + JSON.stringify(publishedDevices));
-    
-    console.log('Returning devices...');
+
     return {
         requestId: body.requestId,
         payload: {
-            agentUserId: '1234',
+            agentUserId: reflectorUrl,
             devices: publishedDevices
         }
     };
@@ -82,9 +77,12 @@ const isInEmulator = () => { return process.env.FUNCTIONS_EMULATOR === true || p
 // standardizes a URL given a valid URI that is in an unknown format (beginning or not with http),
 // ending with a slash, etc. the standard format will NOT contain a trailing slash
 const standardizeUrl = (url) => {
-    let standardUrl = url.startsWith("http") ? url : `https://${url}`;
+    const defaultProtocol = isInEmulator() ? "http" : "https";
+    let standardUrl = url.startsWith("http") ? url : `${defaultProtocol}://${url}`;
+
     if (standardUrl.endsWith("/"))
         standardUrl = standardUrl.slice(0, -1);
+    
     return standardUrl;
 }
 
@@ -99,7 +97,7 @@ const retrieveReflectorUrlForUser = async (headers) => {
     // if we are running in an emulated environment, this should load the debug parameters
     // specified in the settings file
     if (isInEmulator()) {
-        return standardizeUrl(emulatorReflector.value());
+        return emulatorReflector.value();
     }
 
     var bearerToken = authenticationToken(headers);
@@ -121,19 +119,19 @@ const retrieveReflectorUrlForUser = async (headers) => {
     const reflectorUrls = await webRequest('https://www.indigodomo.com/api/v3/integrations/reflector-url', requestOptions).json();
     console.log('Reflector Url: ' + reflectorUrls.reflector_url)
 
-    return standardizeUrl(reflectorUrls.reflector_url);
+    return reflectorUrls.reflector_url;
 };
 
 // executes a command/request against the Google Client helper plugin, returning the result as a JSON
 // parsed object
 const executeIndigoRequest = async(reflectorUrl, authToken, commandName, payload) => {
-    var fullUri = `${reflectorUrl}/message/com.duncanware.domoPadMobileClient/${commandName}`;
-                    //payload ? `?${payload}` : '';
+    var fullUri = `${standardizeUrl(reflectorUrl)}/message/com.duncanware.domoPadMobileClient/${commandName}`;
+    if (payload) fullUri += `?${payload}`;
     var uri = url.parse(fullUri);
 
     var requestOptions = {
         hostname: uri.hostname,
-        port: uri.port,
+        port: uri.protocol == "https" ? 443 : 8176,
         path: uri.path,
         method: 'GET',
         headers: {

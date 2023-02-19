@@ -17,7 +17,7 @@ describe('Indigo Assistant Smart Home Functions', async () => {
         testEnviron = process.env;
         process.env = { 
             "FUNCTIONS_EMULATOR": true ,
-            "EMULATOR_REFLECTOR": "http://10.1.1.170:8176",
+            "EMULATOR_REFLECTOR": "10.1.1.170",
             "EMULATOR_TOKEN"    : "Bearer 76a8ff7a-dbd6-4851-9222-5f5bafacb64d"
         };
         
@@ -35,7 +35,7 @@ describe('Indigo Assistant Smart Home Functions', async () => {
             const expected = {
                 "result"   : "pong",
                 "emulator" : true,
-                "reflector": "http://10.1.1.170:8176",
+                "reflector": "10.1.1.170",
                 "token"    : "Bearer 76a8ff7a-dbd6-4851-9222-5f5bafacb64d"
             };
             const response = {
