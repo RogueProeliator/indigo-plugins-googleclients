@@ -53,6 +53,15 @@ smartHomeApp.onSync(async (body, headers) => {
     // retrieve the reflector URL that is associated with this Bearer token/account
     // (we will first check caching value, then retrieve if necessary)
     const reflectorUrl = await retrieveReflectorUrlForUser(headers);
+    if (!reflectorUrl) {
+        return {
+            requestId: body.requestId,
+            payload: {
+                errorCode: 'authFailure',
+                debugString: 'Failed to retrieve reflector url from IndigoDomo'
+            }
+        };
+    }
 
     // call into the Indigo server to retrieve the list of Google Home published
     // devices (using the reflector URL)

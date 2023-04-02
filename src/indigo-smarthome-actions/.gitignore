@@ -67,3 +67,5 @@ node_modules/
 
 domotics-pad-indigo-client-*.json
 firebase.json
+
+.env.local
