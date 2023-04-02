@@ -1,21 +1,18 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
-#/////////////////////////////////////////////////////////////////////////////////////////
+#######################################################################################
 # Domotics Pad Google Client Plugin by RogueProeliator <rp@rogueproeliator.com>
 # 	See plugin.py for more plugin details and information
-#/////////////////////////////////////////////////////////////////////////////////////////
+#######################################################################################
 
-#/////////////////////////////////////////////////////////////////////////////////////////
-# Python imports
-#/////////////////////////////////////////////////////////////////////////////////////////
 import indigo
 
-#/////////////////////////////////////////////////////////////////////////////////////////
+#######################################################################################
 # GoogleDeviceTypesDefinition
-#	Dictionary which defines the available Google Home device types and stores the 
-#   recommended traits to support for the device type in order to allow the most complete
-#   control/user experience "out of the box"
-#/////////////////////////////////////////////////////////////////////////////////////////
+# Dictionary which defines the available Google Home device types and stores the
+# recommended traits to support for the device type in order to allow the most complete
+# control/user experience "out of the box"
+#######################################################################################
 googleDeviceTypesDefn = {
     'action.devices.types.DOOR': 
         {'Device': 'Door', 'DeviceType': 'action.devices.types.DOOR',
@@ -81,10 +78,10 @@ def map_to_google_device_type(device):
         return ''
 
 
-#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 # Maps an Indigo device (object) to the proper/default Google Assistant device type
 # that may be found in the types dictionary
-#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 def get_subtypes_for_device(device):
     try:
         subtype_meta = SUPPORTED_INDIGO_CLASSES[device.__class__]
@@ -99,10 +96,10 @@ def get_subtypes_for_device(device):
         return [("invalid", "invalid device type")]
 
 
-#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 # Determines the sub type of a device based upon a specified sub type, a device
 # property or hints based upon device properties
-#-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 def get_subtype(device):
     if device.__class__ not in SUPPORTED_INDIGO_CLASSES or SUPPORTED_INDIGO_CLASSES[device.__class__] is None:
         return None
@@ -312,18 +309,18 @@ def build_google_state_update(device):
 # commands may be present. The return is the results of the action in the format
 # expected by the Google Assistant for this particular execute command
 # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-def processExecuteRequest(commandsList):
+def process_execute_request(commands_list):
     # the response object contains a list of devices that fall into each status; this will
     # be a dictionary of status with a value being the list of devices
     device_status_results = {}
 
     # there may be multiple commands to execute in the array
-    for commandDefn in commandsList:
+    for commandDefn in commands_list:
         # build the list of devices against which we must execute the
         # command(s) provided
         devices_list = []
-        for deviceId in commandDefn['devices']:
-            indigo_device = indigo.devices[int(deviceId['id'])]
+        for device_id in commandDefn['devices']:
+            indigo_device = indigo.devices[int(device_id['id'])]
             devices_list.append(indigo_device)
             if indigo_device.id not in device_status_results:
                 device_status_results[indigo_device.id] = ''
@@ -338,10 +335,10 @@ def processExecuteRequest(commandsList):
             if not is_device_online:
                 device_status_results[device.id] = 'OFFLINE'
             else:
-                for execCommand in commandDefn['execution']:
-                    command_id = execCommand['command']
+                for exec_command in commandDefn['execution']:
+                    command_id = exec_command['command']
                     if command_id == 'action.devices.commands.OnOff':
-                        if execCommand['params']['on']:
+                        if exec_command['params']['on']:
                             indigo.device.turnOn(device.id)
                         else:
                             indigo.device.turnOff(device.id)
@@ -360,15 +357,15 @@ def processExecuteRequest(commandsList):
     offline_devices = {'ids': [], 'status': 'OFFLINE'}
 
     # add each device result to the appropriate list
-    for deviceId, result in device_status_results.items():
+    for device_id, result in device_status_results.items():
         if result == 'SUCCESS':
-            success_devices['ids'].append(str(deviceId))
+            success_devices['ids'].append(str(device_id))
         elif result == 'PENDING':
-            pending_devices['ids'].append(str(deviceId))
+            pending_devices['ids'].append(str(device_id))
         elif result == 'ERROR':
-            error_devices['ids'].append(str(deviceId))
+            error_devices['ids'].append(str(device_id))
         elif result == 'offlineDevices':
-            offline_devices['ids'].append(str(deviceId))
+            offline_devices['ids'].append(str(device_id))
 
     # build the composite results array
     if len(success_devices['ids']) > 0:

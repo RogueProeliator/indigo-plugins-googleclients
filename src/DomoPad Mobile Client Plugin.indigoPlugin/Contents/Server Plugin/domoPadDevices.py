@@ -1,27 +1,17 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
-# /////////////////////////////////////////////////////////////////////////////////////////
-# /////////////////////////////////////////////////////////////////////////////////////////
+#######################################################################################
 # Domotics Pad Client Plugin by RogueProeliator <adam@duncanwaredevelopment.com>
-# /////////////////////////////////////////////////////////////////////////////////////////
-# /////////////////////////////////////////////////////////////////////////////////////////
+#######################################################################################
 
-# /////////////////////////////////////////////////////////////////////////////////////////
-# Python imports
-# /////////////////////////////////////////////////////////////////////////////////////////
-import RPFramework
+from RPFramework.RPFrameworkNonCommChildDevice import RPFrameworkNonCommChildDevice
 
 
-# /////////////////////////////////////////////////////////////////////////////////////////
-# /////////////////////////////////////////////////////////////////////////////////////////
-# DomoPadAndroidClient
-# /////////////////////////////////////////////////////////////////////////////////////////
-# /////////////////////////////////////////////////////////////////////////////////////////
-class DomoPadAndroidClient(RPFramework.RPFrameworkNonCommChildDevice):
+class DomoPadAndroidClient(RPFrameworkNonCommChildDevice):
 
-	# /////////////////////////////////////////////////////////////////////////////////////
+	#######################################################################################
 	# Class construction and destruction methods
-	# /////////////////////////////////////////////////////////////////////////////////////
+	#######################################################################################
 	# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	# Constructor called once upon plugin class receiving a command to start device
 	# communication. The plugin will call other commands when needed, simply zero out the
@@ -30,20 +20,20 @@ class DomoPadAndroidClient(RPFramework.RPFrameworkNonCommChildDevice):
 	def __init__(self, plugin, device):
 		super().__init__(plugin, device)
 		
-		self.upgradedDeviceProperties.append(("SupportsBatteryLevel", True))
+		self.upgraded_device_properties.append(("SupportsBatteryLevel", True))
 		
-		self.upgradedDeviceStates.append("modelName")
-		self.upgradedDeviceStates.append("batteryStatus")
-		self.upgradedDeviceStates.append("batteryLevel")
-		self.upgradedDeviceStates.append("longitude")
-		self.upgradedDeviceStates.append("latitude")
-		self.upgradedDeviceStates.append("locationFixTime")
+		self.upgraded_device_states.append("modelName")
+		self.upgraded_device_states.append("batteryStatus")
+		self.upgraded_device_states.append("batteryLevel")
+		self.upgraded_device_states.append("longitude")
+		self.upgraded_device_states.append("latitude")
+		self.upgraded_device_states.append("locationFixTime")
 
-	# /////////////////////////////////////////////////////////////////////////////////////
+	#######################################################################################
 	# Overridden communications functions
-	# /////////////////////////////////////////////////////////////////////////////////////
-	def initiateCommunications(self):
-		super(DomoPadAndroidClient, self).initiateCommunications()
+	#######################################################################################
+	def initiate_communications(self):
+		super().initiate_communications()
 		
 		# update the state of the device to reflect the pairing status...
 		current_pairing_prop = self.indigoDevice.pluginProps.get("deviceRegistrationId", "")
@@ -54,24 +44,17 @@ class DomoPadAndroidClient(RPFramework.RPFrameworkNonCommChildDevice):
 			self.indigoDevice.updateStateOnServer("isPaired", True, uiValue="Paired")
 			
 
-# /////////////////////////////////////////////////////////////////////////////////////////
-# /////////////////////////////////////////////////////////////////////////////////////////
-# VideoCameraFeed
-# Handles the specification of a video feed that can be shown within HousePad, such as
-# to show live security camera feeds
-# /////////////////////////////////////////////////////////////////////////////////////////
-# /////////////////////////////////////////////////////////////////////////////////////////
-class VideoCameraFeed(RPFramework.RPFrameworkNonCommChildDevice):
+class VideoCameraFeed(RPFrameworkNonCommChildDevice):
 
-	# /////////////////////////////////////////////////////////////////////////////////////
+	#######################################################################################
 	# Class construction and destruction methods
-	# /////////////////////////////////////////////////////////////////////////////////////
+	#######################################################################################
 	# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	# Constructor called once upon plugin class receiving a command to start device
 	# communication. The plugin will call other commands when needed, simply zero out the
 	# member variables
 	# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	def __init__(self, plugin, device):
-		super(VideoCameraFeed, self).__init__(plugin, device)
+		super().__init__(plugin, device)
 			
 		

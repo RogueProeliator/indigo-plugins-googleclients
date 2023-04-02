@@ -8,12 +8,7 @@ Supports item (`int`, `float`, `long`, `decimal.Decimal`, `bool`, `str`, `unicod
 
 This module works with both Python 2 and 3.
 """
-
 from __future__ import unicode_literals
-
-__version__ = '1.7.4'
-version = __version__
-
 from random import randint
 import collections
 import numbers
@@ -21,20 +16,14 @@ import logging
 import indigo
 from xml.dom.minidom import parseString
 
+__version__ = '1.7.4'
+version = __version__
 
 LOG = logging.getLogger("dicttoxml")
 
-# python 3 doesn't have a unicode type
-try:
-    unicode
-except:
-    unicode = str
-
-# python 3 doesn't have a long type
-try:
-    long
-except:
-    long = int
+# python 3 doesn't have a unicode or long type
+unicode = str
+long    = int
 
 
 def set_debug(debug=True, filename='dicttoxml.log'):
@@ -59,9 +48,11 @@ def unicode_me(something):
         return unicode(something, 'utf-8')
     except:
         return unicode(something)
-        
 
-ids = [] # initialize list of unique ids
+
+# initialize list of unique ids
+ids = []
+
 
 def make_id(element, start=100000, end=999999):
     """Returns a random integer"""
