@@ -80,17 +80,17 @@ class Plugin(RPFrameworkPlugin):
 	# can/should be overridden in the plugin implementation (if needed)
 	# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	def handle_unknown_plugin_command(self, rp_command, requeue_commands_list):
-		if rp_command.commandName == GOOGLEHOME_SENDDEVICEUPDATE:
+		if rp_command.command_name == GOOGLEHOME_SENDDEVICEUPDATE:
 			try:
 				reflector_url     = f"{indigo.server.getReflectorURL()}/"
-				device_update_xml = dicttoxml.dicttoxml(rp_command.commandPayload, True, "Device")
+				device_update_xml = dicttoxml.dicttoxml(rp_command.command_payload, True, "Device")
 				request_body      = {"intent": "googlehomegraph.UPDATE_DEVICE", "payload": {"agentId": reflector_url, "deviceUpdate": device_update_xml}}
 				self.logger.info(f"Sending {json.dumps(request_body)}")
 				requests.post(INDIGO_SERVER_CLOUD_URL, data=json.dumps(request_body))
 			except:
 				self.logger.exception("Failed to send device update to Google Home")
 
-		elif rp_command.commandName == GOOGLEHOME_REQUESTSYNC:
+		elif rp_command.command_name == GOOGLEHOME_REQUESTSYNC:
 			try:
 				reflector_url = f"{indigo.server.getReflectorURL()}/'"
 				request_body  = f'{{ "intent": "googlehomegraph.REQUEST_SYNC", "payload": {{ "agentId": "{reflector_url}" }} }}'
@@ -99,29 +99,29 @@ class Plugin(RPFrameworkPlugin):
 			except:
 				self.logger.exception('Failed to request that device definitions re-synchronize with Google Home/Assistant')
 
-		elif rp_command.commandName == DOMOPADCOMMAND_SENDNOTIFICATION:
-			self.logger.threaddebug(f"Push Notification Send Command: DevicePairID={rp_command.commandPayload[0]}; Type={rp_command.commandPayload[2]}; Message={rp_command.commandPayload[1]}")
+		elif rp_command.command_name == DOMOPADCOMMAND_SENDNOTIFICATION:
+			self.logger.threaddebug(f"Push Notification Send Command: DevicePairID={rp_command.command_payload[0]}; Type={rp_command.command_payload[2]}; Message={rp_command.command_payload[1]}")
 
 			# set up the defaults so that we know all the parameters have a value...
-			query_string_params = { "devicePairingId": rp_command.commandPayload[0],
+			query_string_params = { "devicePairingId": rp_command.command_payload[0],
 									"notificationType": "Alert",
-									"priority": rp_command.commandPayload[2],
-									"message": f"{rp_command.commandPayload[1]}"}
+									"priority": rp_command.command_payload[2],
+									"message": f"{rp_command.command_payload[1]}"}
 			query_string_params["action1Name"]  = ""
 			query_string_params["action1Group"] = ""
 			query_string_params["action2Name"]  = ""
 			query_string_params["action2Group"] = ""
 
 			# build the query string as it must be URL encoded
-			if rp_command.commandPayload[3] != "" and rp_command.commandPayload[4] != "":
-				self.logger.threaddebug(f"Push Notification Send Action 1: {rp_command.commandPayload[3]} => {rp_command.commandPayload[4]}")
-				query_string_params["action1Name"] = f"{rp_command.commandPayload[3]}"
-				query_string_params["action1Group"] = f"{rp_command.commandPayload[4]}"
+			if rp_command.command_payload[3] != "" and rp_command.command_payload[4] != "":
+				self.logger.threaddebug(f"Push Notification Send Action 1: {rp_command.command_payload[3]} => {rp_command.command_payload[4]}")
+				query_string_params["action1Name"] = f"{rp_command.command_payload[3]}"
+				query_string_params["action1Group"] = f"{rp_command.command_payload[4]}"
 				query_string_params["notificationType"] = "ActionAlert"
-			if rp_command.commandPayload[5] != "" and rp_command.commandPayload[6] != "":
-				self.logger.threaddebug(f"Push Notification Send Action 2: {rp_command.commandPayload[5]} => {rp_command.commandPayload[6]}")
-				query_string_params["action2Name"] = f"{rp_command.commandPayload[5]}"
-				query_string_params["action2Group"] = f"{rp_command.commandPayload[6]}"
+			if rp_command.command_payload[5] != "" and rp_command.command_payload[6] != "":
+				self.logger.threaddebug(f"Push Notification Send Action 2: {rp_command.command_payload[5]} => {rp_command.command_payload[6]}")
+				query_string_params["action2Name"] = f"{rp_command.command_payload[5]}"
+				query_string_params["action2Group"] = f"{rp_command.command_payload[6]}"
 				query_string_params["notificationType"] = "ActionAlert"
 			self.logger.threaddebug(f"Push Notification Payload={json.dumps(query_string_params)}")
 
@@ -139,13 +139,13 @@ class Plugin(RPFrameworkPlugin):
 			except:
 				self.logger.exception("Error sending push notification.")
 
-		elif rp_command.commandName == DOMOPADCOMMAND_CPDISPLAYNOTIFICATION:
-			self.logger.threaddebug(f"Control Page Display Request Command: Id={rp_command.commandPayload[0]}; Page={rp_command.commandPayload[1]}")
+		elif rp_command.command_name == DOMOPADCOMMAND_CPDISPLAYNOTIFICATION:
+			self.logger.threaddebug(f"Control Page Display Request Command: Id={rp_command.command_payload[0]}; Page={rp_command.command_payload[1]}")
 
 			# load the control page name so that we may pass it along to the device
-			requested_page = indigo.rawServerRequest("GetControlPage", {"ID": rp_command.commandPayload[1]})
+			requested_page = indigo.rawServerRequest("GetControlPage", {"ID": rp_command.command_payload[1]})
 			cp_page_name   = requested_page["Name"]
-			query_string_params = {"devicePairingId": rp_command.commandPayload[0], "pageRequested": rp_command.commandPayload[1], "pageName": cp_page_name}
+			query_string_params = {"devicePairingId": rp_command.command_payload[0], "pageRequested": rp_command.command_payload[1], "pageName": cp_page_name}
 
 			api_endpoint_url = "https://com-duncanware-domopad.appspot.com/_ah/api/messaging/v1/sendControlPageDisplayRequest"
 			try:
@@ -159,9 +159,9 @@ class Plugin(RPFrameworkPlugin):
 			except:
 				self.logger.exception("Error sending control page display request")
 
-		elif rp_command.commandName == DOMOPADCOMMAND_DEVICEUPDATEREQUESTNOTIFICATION:
-			self.logger.threaddebug(f"Device Status Update Request: Device Id={rp_command.commandPayload}")
-			query_string_params = {"devicePairingId": rp_command.commandPayload}
+		elif rp_command.command_name == DOMOPADCOMMAND_DEVICEUPDATEREQUESTNOTIFICATION:
+			self.logger.threaddebug(f"Device Status Update Request: Device Id={rp_command.command_payload}")
+			query_string_params = {"devicePairingId": rp_command.command_payload}
 
 			api_endpoint_url = "https://com-duncanware-domopad.appspot.com/_ah/api/messaging/v1/sendDeviceStatusUpdateRequest"
 			try:
@@ -194,7 +194,7 @@ class Plugin(RPFrameworkPlugin):
 			indigo.server.log(f"Unable to send push notification to {rp_device.indigoDevice.deviceId}; the device is not paired.", isError=True)
 		else:
 			self.logger.threaddebug(f"Queuing push notification command for {action.deviceId}")
-			self.plugin_command_queue.put(RPFrameworkCommand(DOMOPADCOMMAND_SENDNOTIFICATION, commandPayload=(
+			self.plugin_command_queue.put(RPFrameworkCommand(DOMOPADCOMMAND_SENDNOTIFICATION, command_payload=(
 				registration_id, message, importance_level, action1_name, action1_group, action2_name, action2_group)))
 
 	# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -229,7 +229,7 @@ class Plugin(RPFrameworkPlugin):
 			self.logger.error(f"Unable to send speak announcement request notification to {rp_device.indigoDevice.deviceId}; no announcement text was entered.")
 		else:
 			self.logger.threaddebug("Queuing peak announcement request notification command for {action.deviceId}")
-			self.plugin_command_queue.put(RPFrameworkCommand(DOMOPADCOMMAND_SPEAKANNOUNCEMENTNOTIFICATION, commandPayload=(device_registration_id, announcement_msg, rp_device)))
+			self.plugin_command_queue.put(RPFrameworkCommand(DOMOPADCOMMAND_SPEAKANNOUNCEMENTNOTIFICATION, command_payload=(device_registration_id, announcement_msg, rp_device)))
 
 	# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	# This routine will send the Control Page Display Command to a Android device (in
@@ -246,7 +246,7 @@ class Plugin(RPFrameworkPlugin):
 			self.logger.error(f"Unable to send control page display request notification to {rp_device.indigoDevice.deviceId}; no control page was selected.")
 		else:
 			self.logger.threaddebug(f"Queuing control page display request notification command for {action.deviceId}")
-			self.plugin_command_queue.put(RPFrameworkCommand(DOMOPADCOMMAND_CPDISPLAYNOTIFICATION, commandPayload=(device_registration_id, control_page_id)))
+			self.plugin_command_queue.put(RPFrameworkCommand(DOMOPADCOMMAND_CPDISPLAYNOTIFICATION, command_payload=(device_registration_id, control_page_id)))
 
 	# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	# This routine will send the Update Device Status request notification in order to ask
@@ -261,7 +261,7 @@ class Plugin(RPFrameworkPlugin):
 			self.logger.error(f"Unable to send status update request to {rp_device.indigoDevice.deviceId}; the device is not paired.")
 		else:
 			self.logger.threaddebug(f"Queuing device status update request notification command for {action.deviceId}")
-			self.plugin_command_queue.put(RPFrameworkCommand(DOMOPADCOMMAND_DEVICEUPDATEREQUESTNOTIFICATION, commandPayload=device_registration_id))
+			self.plugin_command_queue.put(RPFrameworkCommand(DOMOPADCOMMAND_DEVICEUPDATEREQUESTNOTIFICATION, command_payload=device_registration_id))
 
 	# endregion
 	#######################################################################################

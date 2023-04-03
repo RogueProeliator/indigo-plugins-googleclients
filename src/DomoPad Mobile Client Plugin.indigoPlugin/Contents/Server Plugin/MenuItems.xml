@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
 <MenuItems>
+	<!--
 	<MenuItem id="configureGHomeDevices">
 		<Name>Configure Google Home Devices</Name>
 		<ConfigUI>
@@ -55,6 +56,7 @@
 		<Name>Re-Synchronize Devices with Google</Name>
 		<CallbackMethod>request_resync_with_google</CallbackMethod>
 	</MenuItem>
+	-->
 
 	<MenuItem id="debugSectionSeparator" />
     <MenuItem id="toggleDebug">
