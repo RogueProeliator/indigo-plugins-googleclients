@@ -97,16 +97,7 @@
 	</Action>
 
     <!-- API Actions... Not published in the UI -->
-    <Action id="google_home_event_sync_request" uiPath="hidden">
-		<Name>Google Assistant On Sync Handler</Name>
-		<CallbackMethod>google_request_sync_devices</CallbackMethod>
-	</Action>
-	<Action id="set_thermostat_setpoint" uiPath="hidden">
-        <Name>Set Thermostat Setpoint</Name>
-        <CallbackMethod>set_thermostat_setpoint</CallbackMethod>
-    </Action>
-
-	<Action id="registerAndroidDevice" uiPath="hidden">
+    <Action id="registerAndroidDevice" uiPath="hidden">
 		<Name>Register Android Device</Name>
 		<CallbackMethod>register_android_device</CallbackMethod>
 	</Action>

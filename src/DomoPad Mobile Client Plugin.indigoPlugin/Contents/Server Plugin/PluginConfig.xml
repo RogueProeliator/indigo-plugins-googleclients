@@ -9,21 +9,6 @@
 	<Field id="pluginDescriptionLabel" type="label" fontSize="small" fontColor="darkGray">
         <Label>Provides advanced interactions when used with the Domotics Pad Android Client and allows control of Indigo-connected devices via Google Home / Assistant.</Label>
     </Field>
-
-	<Field type="label" id="publishSpacer" fontSize="small">
-		<Label></Label>
-	</Field>
-	<Field id="publishOptionsTitle" type="label" fontColor="darkGray">
-		<Label>GOOGLE HOME/ASSISTANT OPTIONS</Label>
-	</Field>
-	<Field id="googleHomeOptionsSep" type="separator" />
-	<Field type="checkbox" id="sendUpdatesToGoogle">
-		<Label>Publish Updates</Label>
-		<Description>Send device status updates to Google Assistant</Description>
-	</Field>
-	<Field type="label" id="publishUpdatesInstructions" fontSize="small">
-		<Label>Publishing of updates is still controlled individually by device, but this allows a global "off" switch</Label>
-	</Field>
 	
 	<Field type="label" id="debugSpacer" fontSize="small">
 		<Label></Label>
