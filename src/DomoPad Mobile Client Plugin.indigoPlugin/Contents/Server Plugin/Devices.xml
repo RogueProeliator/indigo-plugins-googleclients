@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <Devices>
 	<!-- a connected phone that may receive notifications and, optionally, restrict access -->
-	<!-- to the remote operations / plugin framework -->
+	<!-- to the remote operations / plugin framework                                       -->
 	<Device type="custom" id="domoPadAndroidClient">
 		<Name>Android Remote Client</Name>
 		<ConfigUI>	

@@ -62,15 +62,11 @@
 		<Name>Send Speak Announcement Command</Name>
 		<CallbackMethod>process_speak_announcement_notification</CallbackMethod>
 		<ConfigUI>
-			<Field id="cpNotificationMessageTitle" type="label" fontColor="darkGray">
-				<Label>SPEAK ANNOUNCEMENT COMMAND</Label>
-			</Field>
-			<Field id="annNotificationMessageSeparator" type="separator" />
-			<Field id="messageSubInstructions" type="label" fontSize="small" alignWithControl="true">
-				<Label>This action will have Indigo request that the target Android device speak the entered text.</Label>
-			</Field>
 			<Field id="announcement" type="textfield">
 				<Label>Announcement:</Label>
+			</Field>
+			<Field id="messageSubInstructions" type="label" fontSize="small">
+				<Label>Indigo will request that the target Android device speak the entered text; the client will need to be configured to support these requests.</Label>
 			</Field>
 		</ConfigUI>
 	</Action>
@@ -78,16 +74,12 @@
 		<Name>Send Control Page Display Command</Name>
 		<CallbackMethod>process_control_page_display_notification</CallbackMethod>
 		<ConfigUI>
-			<Field id="cpNotificationMessageTitle" type="label" fontColor="darkGray">
-				<Label>CONTROL PAGE DISPLAY COMMAND</Label>
-			</Field>
-			<Field id="cpNotificationMessageSeparator" type="separator" />
-			<Field id="messageSubInstructions" type="label" fontSize="small" alignWithControl="true">
-				<Label>This action will have Indigo request that the selected control page be displayed on the target Android device. Note that the target device must be configured to allow this action in the Domotics Pad application settings; otherwise the command will be ignored.</Label>
-			</Field>
 			<Field id="controlPageId" type="menu">
-				<Label></Label>
+				<Label>Control Page:</Label>
 				<List class="indigo.controlPages" />
+			</Field>
+			<Field id="messageSubInstructions" type="label" fontSize="small">
+				<Label>Indigo will request that the selected control page be displayed on the target Android device; note that the target device must be configured to allow this action in the Domotics Pad application settings.</Label>
 			</Field>
 		</ConfigUI>
 	</Action>
