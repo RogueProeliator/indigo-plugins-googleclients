@@ -375,7 +375,7 @@ class Plugin(RPFrameworkPlugin):
 					indigo_plugin.executeAction(action_id, deviceId=int(device_id))
 					command_response = "OK"
 				else:
-					action_prop_dict = eval(actionProps)
+					action_prop_dict = eval(action_props)
 					indigo_plugin.executeAction(action_id, deviceId=int(device_id), props=action_prop_dict)
 					command_response = "OK"
 			if caller_waiting_for_result:
