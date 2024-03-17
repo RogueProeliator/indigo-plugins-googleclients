@@ -348,5 +348,22 @@ class Plugin(RPFrameworkPlugin):
 			self.logger.exception("Failed to update mobile client status via API")
 			return {"status": 500, "content": f"Failed to update mobile client status: {ex}"}
 
+	# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	# Called from the updated Android application in order to execute a plugin action not
+	# defined in the mobile XML messages
+	# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	def executePluginAction(self, action, dev=None, caller_waiting_for_result=None):
+		try:
+			body_params = action.props["body_params"] if "body_params" in action.props else action.props["url_query_args"]
+			plugin_id    = body_params.get(u'pluginId')[0]
+			device_id    = body_params.get(u'deviceId')[0]
+			action_id    = body_params.get(u'actionId')[0]
+			action_props = body_params.get(u'actionProps')[0]
+
+			self.logger.info(f"Received request to execute {action_id} against {device_id} via {plugin_id} with props {action_props}")
+		except Exception as ex:
+			self.logger.exception("Failed to execute plugin action from Mobile device")
+			return {"status": 500, "content": f"Failed to execute plugin action from Mobile: {ex}"}
+
 	# endregion
 	#######################################################################################
