@@ -101,4 +101,8 @@
 		<Name>Update Android Device State</Name>
 		<CallbackMethod>update_client_status</CallbackMethod>
 	</Action>
+	<Action id="executePluginAction" uiPath="hidden">
+		<Name>Execute Plugin Action from Device</Name>
+		<CallbackMethod>execute_plugin_action</CallbackMethod>
+	</Action>
 </Actions>

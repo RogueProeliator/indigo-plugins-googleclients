@@ -352,7 +352,7 @@ class Plugin(RPFrameworkPlugin):
 	# Called from the updated Android application in order to execute a plugin action not
 	# defined in the mobile XML messages
 	# -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	def executePluginAction(self, action, dev=None, caller_waiting_for_result=None):
+	def execute_plugin_action(self, action, dev=None, caller_waiting_for_result=None):
 		try:
 			body_params = action.props["body_params"] if "body_params" in action.props else action.props["url_query_args"]
 			plugin_id    = body_params.get(u'pluginId')[0]
