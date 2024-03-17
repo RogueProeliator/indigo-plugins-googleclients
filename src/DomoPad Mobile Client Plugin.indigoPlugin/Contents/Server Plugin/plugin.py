@@ -355,12 +355,32 @@ class Plugin(RPFrameworkPlugin):
 	def execute_plugin_action(self, action, dev=None, caller_waiting_for_result=None):
 		try:
 			body_params = action.props["body_params"] if "body_params" in action.props else action.props["url_query_args"]
-			plugin_id    = body_params.get(u'pluginId')[0]
-			device_id    = body_params.get(u'deviceId')[0]
-			action_id    = body_params.get(u'actionId')[0]
-			action_props = body_params.get(u'actionProps')[0]
+			plugin_id    = body_params.get("pluginId")
+			device_id    = body_params.get("deviceId")
+			action_id    = body_params.get("actionId")
+			action_props = body_params.get("actionProps")
 
-			self.logger.info(f"Received request to execute {action_id} against {device_id} via {plugin_id} with props {action_props}")
+			command_response = "unknown"
+			if plugin_id == "com.duncanware.domoPadMobileClient":
+				indigo_plugin = indigo.activePlugin
+				if action_id == "sendUpdateStatusRequestNotification":
+					self.logger.warning(f"Should request device status update for {device_id}")
+				else:
+					self.logger.error(f"Unknown action received for domoPadMobileClient: {action_id}")
+			else:
+				indigo_plugin = indigo.server.getPlugin(plugin_id)
+				if indigo_plugin is None:
+					command_response = "ERROR: Invalid plugin specified"
+				elif (action_props is None) or (len(action_props) == 0):
+					indigo_plugin.executeAction(action_id, deviceId=int(device_id))
+					command_response = "OK"
+				else:
+					action_prop_dict = eval(actionProps)
+					indigo_plugin.executeAction(action_id, deviceId=int(device_id), props=action_prop_dict)
+					command_response = "OK"
+			if caller_waiting_for_result:
+				return f"{'status': '{command_response}'}"
+			self.logger.debug(f"Received request to execute {action_id} against {device_id} via {plugin_id} with props {action_props}")
 		except Exception as ex:
 			self.logger.exception("Failed to execute plugin action from Mobile device")
 			return {"status": 500, "content": f"Failed to execute plugin action from Mobile: {ex}"}
