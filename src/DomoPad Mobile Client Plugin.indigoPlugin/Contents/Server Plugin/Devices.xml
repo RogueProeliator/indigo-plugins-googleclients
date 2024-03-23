@@ -5,7 +5,7 @@
 	<Device type="custom" id="domoPadAndroidClient">
 		<Name>Android Remote Client</Name>
 		<ConfigUI>	
-			<Field id="securityOptionsTitle" type="label" fontColor="darkGray">
+			<Field id="securityOptionsTitle" type="label" fontSize="small">
 				<Label>SECURITY OPTIONS</Label>
 			</Field>
 			<Field id="instructionSeparator1" type="separator" />
